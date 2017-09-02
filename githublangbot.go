@@ -1,0 +1,5 @@
+package githublangbot
+
+func main() {
+
+}
