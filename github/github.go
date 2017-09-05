@@ -24,7 +24,7 @@ type Repo struct {
 
 var client = http.Client{}
 
-func (auth *GHAuth) AllRepos(profile string) ([]*LangStatistic, error) {
+func (auth *GHAuth) LangStatistic(profile string) ([]*LangStatistic, error) {
 	url := fmt.Sprintf("https://api.github.com/users/%s/repos", profile)
 
 	resp, err := get(auth, url)
@@ -54,7 +54,7 @@ func (auth *GHAuth) AllRepos(profile string) ([]*LangStatistic, error) {
 
 func getLanguages(profile string, repoName string, auth *GHAuth) (map[string]int, error) {
 
-	url := fmt.Sprintf("http://api.github.com/repos/%s/%s/getLanguages", profile, repoName)
+	url := fmt.Sprintf("http://api.github.com/repos/%s/%s/languages", profile, repoName)
 
 	resp, err := get(auth, url)
 	if err != nil {

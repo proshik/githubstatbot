@@ -11,7 +11,7 @@ func TestAllRepos(t *testing.T) {
 
 	auth := &GHAuth{token}
 
-	result, err := auth.AllRepos("proshik")
+	result, err := auth.LangStatistic("proshik")
 	if err != nil {
 		t.Fatal(err)
 	}
