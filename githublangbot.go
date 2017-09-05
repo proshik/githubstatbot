@@ -5,8 +5,8 @@ import (
 	"os"
 	"gopkg.in/telegram-bot-api.v4"
 	"github.com/proshik/githublangbot/github"
-	"fmt"
 	"bytes"
+	"fmt"
 )
 
 func main() {
@@ -38,6 +38,7 @@ func main() {
 	u.Timeout = 60
 
 	updates, err := bot.GetUpdatesChan(u)
+
 	if err != nil {
 		log.Panic(err)
 	}
@@ -48,6 +49,9 @@ func main() {
 		if update.Message.IsCommand() {
 
 			switch update.Message.Command() {
+			case "start":
+				msg = tgbotapi.NewMessage(update.Message.Chat.ID, createStartText())
+				msg.ParseMode = "markdown"
 			case "languages":
 				if update.Message.CommandArguments() != "" {
 					r, err := gh.LangStatistic(update.Message.CommandArguments())
@@ -68,6 +72,20 @@ func main() {
 
 		bot.Send(msg)
 	}
+}
+
+func handleBotUpdates(bot *tgbotapi.BotAPI, gh *github.GHAuth) {
+
+}
+
+func createStartText() string {
+	buf := bytes.NewBufferString("Telegram bot written in GO. This bot show GitHub languages info by account\n")
+
+	buf.WriteString("\n")
+	buf.WriteString("You can control me by sending these commands:\n\n")
+	buf.WriteString("*/languages <github_account_name>* - list languages for the all repositories\n")
+
+	return buf.String()
 }
 func createLangStatText(statistics []*github.LangStatistic) string {
 	buf := bytes.NewBufferString("")
