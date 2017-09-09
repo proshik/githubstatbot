@@ -10,7 +10,7 @@ import (
 func TestNewGithubClient(t *testing.T) {
 	token := os.Getenv("GITHUB_TOKEN")
 
-	_, err := NewGithub(token)
+	_, err := NewGitHub(token)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,7 +20,7 @@ func TestNewGithubClient(t *testing.T) {
 func TestReposSuccess(t *testing.T) {
 	token := os.Getenv("GITHUB_TOKEN")
 	user := "proshik";
-	github, err := NewGithub(token)
+	github, err := NewGitHub(token)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +34,7 @@ func TestReposSuccess(t *testing.T) {
 func TestReposFailUserNotFound(t *testing.T) {
 	token := os.Getenv("GITHUB_TOKEN")
 	user := "proshik1";
-	github, err := NewGithub(token)
+	github, err := NewGitHub(token)
 	if err != nil {
 		t.Fatal(err)
 	}

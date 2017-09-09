@@ -4,15 +4,13 @@ import (
 	"github.com/google/go-github/github"
 	"golang.org/x/oauth2"
 	"context"
-	_"log"
-	_"sort"
 )
 
 type GitHub struct {
 	Client *github.Client
 }
 
-func NewGithub(token string) (*GitHub, error) {
+func NewGitHub(token string) (*GitHub, error) {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
@@ -35,6 +33,17 @@ func (github *GitHub) Repos(user string) ([]*github.Repository, error) {
 	return repos, nil
 }
 
+func (github *GitHub) Repo(user string, repoName string) (*github.Repository, error) {
+	ctx := context.Background()
+
+	repo, _, err := github.Client.Repositories.Get(ctx, user, repoName)
+	if err != nil {
+		return nil, err
+	}
+
+	return repo, nil
+}
+
 func (github *GitHub) Language(user string, repoName string) (map[string]int, error) {
 	ctx := context.Background()
 
@@ -44,4 +53,15 @@ func (github *GitHub) Language(user string, repoName string) (map[string]int, er
 	}
 
 	return lang, nil
+}
+
+func (github *GitHub) CommitActivity(user string, repoName string) ([]*github.WeeklyCommitActivity, error) {
+	ctx := context.Background()
+
+	activity, _, err := github.Client.Repositories.ListCommitActivity(ctx, user, repoName)
+	if err != nil {
+		return nil, err
+	}
+
+	return activity, nil
 }

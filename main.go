@@ -18,7 +18,7 @@ func main() {
 		log.Panic("GitHub token is empty")
 	}
 
-	github, err := client.NewGithub(gitHubToken)
+	github, err := client.NewGitHub(gitHubToken)
 	if err != nil {
 		log.Panic(err)
 	}
