@@ -39,7 +39,8 @@ func (b *Bot) ReadUpdates() {
 			case update := <-info:
 				bot_res <- sendCommandInfo(&update)
 			case update := <-language:
-				bot_res <- languageCommand(&update, b.GitHubClient)
+				done := languageCommand(&update, b.GitHubClient)
+				bot_res <- done
 			}
 		}
 	}()
@@ -55,7 +56,6 @@ func (b *Bot) ReadUpdates() {
 			switch update.Message.Command() {
 			case "start":
 				start <- update
-				continue
 			case "language":
 				language <- update
 			default:
@@ -72,7 +72,7 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 
 	buf.WriteString("\n")
 	buf.WriteString("You can control me by sending these commands:\n\n")
-	buf.WriteString("*/languages <github_account_name>* - list languages for the all repositories\n")
+	buf.WriteString("*/languages <user>* - list languages for the all repositories\n")
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, buf.String())
 	msg.ParseMode = "markdown"
@@ -85,13 +85,11 @@ func sendCommandInfo(update *tgbotapi.Update) tgbotapi.MessageConfig {
 }
 
 func languageCommand(update *tgbotapi.Update, github *client.GitHub) tgbotapi.MessageConfig {
-	var msg tgbotapi.MessageConfig
-
 	user := update.Message.CommandArguments()
 
 	repos, err := github.Repos(user)
 	if err != nil {
-		msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Not found info by user with name="+user)
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Not found info by user with name="+user)
 	}
 
 	wg := sync.WaitGroup{}
@@ -121,7 +119,7 @@ func languageCommand(update *tgbotapi.Update, github *client.GitHub) tgbotapi.Me
 		}
 	}
 
-	msg = tgbotapi.NewMessage(update.Message.Chat.ID, createLangStatText(calcPercentages(statistics)))
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, createLangStatText(calcPercentages(statistics)))
 	msg.ParseMode = "markdown"
 
 	return msg
