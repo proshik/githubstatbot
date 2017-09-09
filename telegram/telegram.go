@@ -19,26 +19,46 @@ func (b *Bot) ReadUpdates() {
 		log.Panic(err)
 	}
 
+	start := make(chan tgbotapi.Update)
+	language := make(chan tgbotapi.Update)
+	bot_res := make(chan tgbotapi.Chattable)
+
+	go func() {
+		for {
+			select {
+			case update := <-start:
+				bot_res <- startCommand(&update)
+			case update := <-language:
+				bot_res <- languageCommand(&update, b.GitHubClient)
+			}
+		}
+	}()
+
+	go func() {
+		for res := range bot_res {
+			fmt.Println("handle bot_res")
+			b.Bot.Send(res)
+		}
+	}()
+
 	for update := range updates {
-		var msg tgbotapi.MessageConfig
-
 		if update.Message.IsCommand() {
-
 			switch update.Message.Command() {
 			case "start":
-				msg = startCommand(&update)
+				start <- update
+				continue
 			case "language":
-				msg = languageCommand(&update, b.GitHubClient)
+				language <- update
 			default:
-				msg = sendCommandInfo(&update)
+				msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Unrecognized command. Say what?")
+				b.Bot.Send(msg)
 			}
 		} else {
-			msg = sendCommandInfo(&update)
+			start <- update
 		}
-
-		b.Bot.Send(msg)
 	}
 }
+
 func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, createStartText())
 	msg.ParseMode = "markdown"
@@ -66,7 +86,6 @@ func languageCommand(update *tgbotapi.Update, github *client.GitHub) tgbotapi.Me
 func sendCommandInfo(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	return tgbotapi.NewMessage(update.Message.Chat.ID, "default message")
 }
-
 
 func createStartText() string {
 	buf := bytes.NewBufferString("Telegram bot written in GO. This bot show GitHub languages info by account\n")
