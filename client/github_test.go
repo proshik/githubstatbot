@@ -7,8 +7,7 @@ import (
 	_"sort"
 )
 
-func TestNewGithubClient(t *testing.T){
-
+func TestNewGithubClient(t *testing.T) {
 	token := os.Getenv("GITHUB_TOKEN")
 
 	_, err := NewGithub(token)
@@ -16,6 +15,34 @@ func TestNewGithubClient(t *testing.T){
 		t.Fatal(err)
 	}
 
+}
+
+func TestReposSuccess(t *testing.T) {
+	token := os.Getenv("GITHUB_TOKEN")
+	user := "proshik";
+	github, err := NewGithub(token)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = github.Repos(user)
+	if err != nil {
+		t.Errorf("Not found not one repository by username=%s", user)
+	}
+}
+
+func TestReposFailUserNotFound(t *testing.T) {
+	token := os.Getenv("GITHUB_TOKEN")
+	user := "proshik1";
+	github, err := NewGithub(token)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = github.Repos(user)
+	if err != nil {
+		t.Errorf("error on request repositories for user=%s, err: %v\n", user, err)
+	}
 }
 
 //func TestAllRepos(t *testing.T) {
