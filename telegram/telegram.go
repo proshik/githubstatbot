@@ -10,8 +10,8 @@ import (
 	"github.com/proshik/githublangbot/github"
 )
 
-type Languages struct {
-	Language   string
+type Language struct {
+	Title      string
 	Percentage float32
 }
 
@@ -88,7 +88,7 @@ func languageCommand(update *tgbotapi.Update, client *github.Client) tgbotapi.Me
 
 	repos, err := client.Repos(user)
 	if err != nil {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "Not found info by user with name="+user)
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Not found repos for user="+user)
 	}
 
 	wg := sync.WaitGroup{}
@@ -125,20 +125,31 @@ func languageCommand(update *tgbotapi.Update, client *github.Client) tgbotapi.Me
 	return msg
 }
 
-func calcPercentages(languages map[string]int) []*Languages {
-	result := make([]*Languages, 0)
-
+func calcPercentages(languages map[string]int) []*Language {
+	result := make([]*Language, 0)
+	//calculate total sum byte by all languages
 	var totalSum float32
 	for _, v := range languages {
 		totalSum += float32(v)
 	}
 
+	var totalByteOtherLanguages int
 	for key, value := range languages {
-		percent := float32(value) * (float32(100) / totalSum)
-		result = append(result, &Languages{key, round(percent, 0.1)})
+		repoPercent := float32(value) * (float32(100) / totalSum)
+		roundRepoPercent := round(repoPercent, 0.1)
+		if roundRepoPercent >= 0.1 {
+			result = append(result, &Language{key, roundRepoPercent})
+		} else {
+			totalByteOtherLanguages += value
+		}
 	}
-
+	//sort found languages by percentage
 	sort.Slice(result, func(i, j int) bool { return result[i].Percentage > result[j].Percentage })
+	//calculate percentage for language with less then 0.1% from total count
+	if totalByteOtherLanguages != 0 {
+		percent := round(float32(totalByteOtherLanguages)*(float32(100)/totalSum), 0.1)
+		result = append(result, &Language{"--Other languages", percent})
+	}
 
 	return result
 }
@@ -150,11 +161,11 @@ func round(x, unit float32) float32 {
 	return float32(int32(x/unit-0.5)) * unit
 }
 
-func createLangStatText(statistics []*Languages) string {
+func createLangStatText(statistics []*Language) string {
 	buf := bytes.NewBufferString("")
 
 	for _, l := range statistics {
-		buf.WriteString(fmt.Sprintf("*%s* %.1f%%\n", l.Language, l.Percentage))
+		buf.WriteString(fmt.Sprintf("*%s* %.1f%%\n", l.Title, l.Percentage))
 	}
 
 	return buf.String()
