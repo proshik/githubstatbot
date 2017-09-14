@@ -35,10 +35,10 @@ func teardown() {
 }
 
 
-func TestNewGithubClient(t *testing.T) {
+func TestNewClient(t *testing.T) {
 	token := "token"
 
-	_, err := NewGitHub(token)
+	_, err := NewClient(token)
 	if err != nil {
 		t.Fatal(err)
 	}

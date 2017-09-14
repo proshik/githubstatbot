@@ -10,7 +10,7 @@ type Client struct {
 	client *github.Client
 }
 
-func NewGitHub(token string) (*Client, error) {
+func NewClient(token string) (*Client, error) {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},

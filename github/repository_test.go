@@ -50,7 +50,7 @@ func TestReposNotFoundByUser(t *testing.T){
 func TestReposSuccess(t *testing.T) {
 	token := os.Getenv("GITHUB_TOKEN")
 	user := "proshik";
-	github, err := NewGitHub(token)
+	github, err := NewClient(token)
 
 	_, err = github.Repos(user)
 	if err != nil {

@@ -18,12 +18,12 @@ func main() {
 		log.Panic("GitHub token is empty")
 	}
 
-	github, err := github.NewGitHub(gitHubToken)
+	client, err := github.NewClient(gitHubToken)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	bot, err := telegram.NewBot(telegramToken, false, github)
+	bot, err := telegram.NewBot(telegramToken, false, client)
 	if err != nil {
 		log.Panic(err)
 	}
