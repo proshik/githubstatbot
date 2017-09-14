@@ -5,7 +5,7 @@ import (
 	"log"
 	"bytes"
 	"fmt"
-	"github.com/proshik/githublangbot/client"
+	_"github.com/proshik/githublangbot/github"
 	"sync"
 	"sort"
 	gh "github.com/google/go-github/github"
@@ -39,7 +39,7 @@ func (b *Bot) ReadUpdates() {
 			case update := <-info:
 				bot_res <- sendCommandInfo(&update)
 			case update := <-language:
-				done := languageCommand(&update, b.GitHubClient)
+				done := languageCommand(&update, b)
 				bot_res <- done
 			}
 		}
@@ -84,7 +84,7 @@ func sendCommandInfo(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	return tgbotapi.NewMessage(update.Message.Chat.ID, "default message")
 }
 
-func languageCommand(update *tgbotapi.Update, github *client.GitHub) tgbotapi.MessageConfig {
+func languageCommand(update *tgbotapi.Update, github Repository) tgbotapi.MessageConfig {
 	user := update.Message.CommandArguments()
 
 	repos, err := github.Repos(user)
