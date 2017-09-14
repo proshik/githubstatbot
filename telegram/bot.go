@@ -4,22 +4,14 @@ import (
 	"gopkg.in/telegram-bot-api.v4"
 	"log"
 	"github.com/proshik/githublangbot/github"
-	"github.com/google/go-github/github"
 )
-
-type Repository interface {
-	Repos(user string) ([]*github.Repository, error)
-	Repo(user string, repoName string) (*github.Repository, error)
-	Language(user string, repoName string) (map[string]int, error)
-	CommitActivity(user string, repoName string) ([]*github.WeeklyCommitActivity, error)
-}
 
 type Bot struct {
 	Bot          *tgbotapi.BotAPI
-	Repository
+	Client *github.Client
 }
 
-func NewBot(token string, debug bool, ghClient *github.GitHub) (*Bot, error) {
+func NewBot(token string, debug bool, ghClient *github.Client) (*Bot, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		return nil, err

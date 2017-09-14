@@ -5,10 +5,9 @@ import (
 	"log"
 	"bytes"
 	"fmt"
-	_"github.com/proshik/githublangbot/github"
 	"sync"
 	"sort"
-	gh "github.com/google/go-github/github"
+	"github.com/proshik/githublangbot/github"
 )
 
 type Languages struct {
@@ -39,7 +38,7 @@ func (b *Bot) ReadUpdates() {
 			case update := <-info:
 				bot_res <- sendCommandInfo(&update)
 			case update := <-language:
-				done := languageCommand(&update, b)
+				done := languageCommand(&update, b.Client)
 				bot_res <- done
 			}
 		}
@@ -84,10 +83,10 @@ func sendCommandInfo(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	return tgbotapi.NewMessage(update.Message.Chat.ID, "default message")
 }
 
-func languageCommand(update *tgbotapi.Update, github Repository) tgbotapi.MessageConfig {
+func languageCommand(update *tgbotapi.Update, client *github.Client) tgbotapi.MessageConfig {
 	user := update.Message.CommandArguments()
 
-	repos, err := github.Repos(user)
+	repos, err := client.Repos(user)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Not found info by user with name="+user)
 	}
@@ -96,15 +95,16 @@ func languageCommand(update *tgbotapi.Update, github Repository) tgbotapi.Messag
 	languageChan := make(chan map[string]int)
 	for _, repo := range repos {
 		wg.Add(1)
-		go func(wg *sync.WaitGroup, repo *gh.Repository) {
+		go func(wg *sync.WaitGroup, r *github.Repo) {
 			defer wg.Done()
 
-			lang, err := github.Language(user, *repo.Name)
+			lang, err := client.Language(user, *r.Name)
 			if err != nil {
-				log.Printf("Error on request language for user=%s, repo=%s", user, *repo.Name)
+				log.Printf("Error on request language for user=%s, repo=%s", user, *r.Name)
 			}
 			languageChan <- lang
 		}(&wg, repo)
+
 	}
 
 	go func() {
