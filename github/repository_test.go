@@ -2,40 +2,10 @@ package github
 
 import (
 	"testing"
-	"os"
-	"github.com/google/go-github/github"
 	"net/http"
-	"net/http/httptest"
-	"net/url"
 	"fmt"
 	"reflect"
 )
-
-var (
-	// mux is the HTTP request multiplexer used with the test server.
-	mux *http.ServeMux
-	// client is the GitHub client being tested.
-	client *github.Client
-	// server is a test HTTP server used to provide mock API responses.
-	server *httptest.Server
-)
-
-func startServer() *http.ServeMux {
-	mux = http.NewServeMux()
-	server = httptest.NewServer(mux)
-	// github client configured to use test server
-
-	client = github.NewClient(nil)
-	url, _ := url.Parse(server.URL + "/")
-	client.BaseURL = url
-	client.UploadURL = url
-
-	return mux
-}
-
-func teardown() {
-	server.Close()
-}
 
 func TestReposFoundByUser(t *testing.T) {
 	startServer()
@@ -43,7 +13,7 @@ func TestReposFoundByUser(t *testing.T) {
 
 	var user = "proshik"
 	mux.HandleFunc(fmt.Sprintf("/users/%s/repos", user), func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, `[{"name":"repo1"}, {"name":"repo3"}]`)
+		fmt.Fprint(w, `[{"name":"repo1"}, {"name":"repo2"}]`)
 	})
 
 	client := &Client{client: client}
@@ -75,16 +45,6 @@ func TestReposNotFoundByUser(t *testing.T){
 	}
 }
 
-func TestNewGithubClient(t *testing.T) {
-	token := os.Getenv("GITHUB_TOKEN")
-
-	_, err := NewGitHub(token)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-}
-
 /*
 // call read service with token=GITHUB_TOKEN from environment variable
 func TestReposSuccess(t *testing.T) {
@@ -98,7 +58,3 @@ func TestReposSuccess(t *testing.T) {
 	}
 }
  */
-
-// String is a helper routine that allocates a new string value
-// to store v and returns a pointer to it.
-func String(v string) *string { return &v }
