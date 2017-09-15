@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"sync"
 	"sort"
-	"github.com/proshik/githublangbot/github"
+	"github.com/proshik/githubstatbot/github"
 )
 
 type Language struct {

@@ -1,6 +1,6 @@
-# GitHubLangBot
+# GitHubStatBot
 
-Telegram bot written in GO. This bot show GitHub languages info by account
+Telegram bot written in GO. This bot show GitHub statistic by languages, stars, forks and commits.
 
 ## Quick run
 

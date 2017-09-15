@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 	"log"
-	"github.com/proshik/githublangbot/github"
-	"github.com/proshik/githublangbot/telegram"
+	"github.com/proshik/githubstatbot/github"
+	"github.com/proshik/githubstatbot/telegram"
 )
 
 func main() {

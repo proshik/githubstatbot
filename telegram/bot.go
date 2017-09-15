@@ -3,7 +3,7 @@ package telegram
 import (
 	"gopkg.in/telegram-bot-api.v4"
 	"log"
-	"github.com/proshik/githublangbot/github"
+	"github.com/proshik/githubstatbot/github"
 )
 
 type Bot struct {
