@@ -19,7 +19,7 @@ func (b *Bot) ReadUpdates() {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := b.Bot.GetUpdatesChan(u)
+	updates, err := b.bot.GetUpdatesChan(u)
 
 	if err != nil {
 		log.Panic(err)
@@ -27,18 +27,21 @@ func (b *Bot) ReadUpdates() {
 
 	start := make(chan tgbotapi.Update)
 	info := make(chan tgbotapi.Update)
+	auth := make(chan tgbotapi.Update)
 	language := make(chan tgbotapi.Update)
 	bot_res := make(chan tgbotapi.Chattable)
 
 	go func() {
 		for {
 			select {
-			case update := <-start:
-				bot_res <- startCommand(&update)
-			case update := <-info:
-				bot_res <- sendCommandInfo(&update)
-			case update := <-language:
-				done := languageCommand(&update, b.Client)
+			case u := <-start:
+				bot_res <- startCommand(&u)
+			case u := <-info:
+				bot_res <- infoCommand(&u)
+			case u := <-auth:
+				bot_res <- authCommand(&u, b.OAuth)
+			case u := <-language:
+				done := languageCommand(&u, b.client)
 				bot_res <- done
 			}
 		}
@@ -46,7 +49,7 @@ func (b *Bot) ReadUpdates() {
 
 	go func() {
 		for res := range bot_res {
-			b.Bot.Send(res)
+			b.bot.Send(res)
 		}
 	}()
 
@@ -57,6 +60,8 @@ func (b *Bot) ReadUpdates() {
 				start <- update
 			case "language":
 				language <- update
+			case "auth":
+				auth <- update
 			default:
 				info <- update
 			}
@@ -65,7 +70,6 @@ func (b *Bot) ReadUpdates() {
 		}
 	}
 }
-
 func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	buf := bytes.NewBufferString("Telegram bot written in GO. This bot show GitHub languages info by account\n")
 
@@ -79,8 +83,12 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	return msg
 }
 
-func sendCommandInfo(update *tgbotapi.Update) tgbotapi.MessageConfig {
-	return tgbotapi.NewMessage(update.Message.Chat.ID, "default message")
+func infoCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
+	return tgbotapi.NewMessage(update.Message.Chat.ID, "You must write command")
+}
+
+func authCommand(update *tgbotapi.Update, oAuth *github.OAuth) tgbotapi.Chattable {
+	return tgbotapi.NewMessage(update.Message.Chat.ID, "http://github.com/login/oauth/authorize?client_id="+oAuth.ClientId)
 }
 
 func languageCommand(update *tgbotapi.Update, client *github.Client) tgbotapi.MessageConfig {

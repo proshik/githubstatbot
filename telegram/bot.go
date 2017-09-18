@@ -7,11 +7,12 @@ import (
 )
 
 type Bot struct {
-	Bot          *tgbotapi.BotAPI
-	Client *github.Client
+	bot    *tgbotapi.BotAPI
+	client *github.Client
+	*github.OAuth
 }
 
-func NewBot(token string, debug bool, ghClient *github.Client) (*Bot, error) {
+func NewBot(token string, debug bool, ghClient *github.Client, clientId string, clientSecret string) (*Bot, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		return nil, err
@@ -21,5 +22,5 @@ func NewBot(token string, debug bool, ghClient *github.Client) (*Bot, error) {
 
 	log.Printf("Authorized for account %s", bot.Self.UserName)
 
-	return &Bot{bot, ghClient}, nil
+	return &Bot{bot, ghClient, &github.OAuth{ClientId: clientId, ClientSecret: clientSecret}}, nil
 }
