@@ -10,11 +10,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 type Handler struct {
 	ClientId     string
 	ClientSecret string
+	bot          *telegram.Bot
 }
 
 type AccessTokenReq struct {
@@ -51,19 +53,19 @@ func main() {
 		log.Panic("GitHub token is empty")
 	}
 
-	client, err := github.NewClient(gitHubToken)
+	ghClient, err := github.NewClient(gitHubToken)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	bot, err := telegram.NewBot(telegramToken, false, client, clientId, clientSecret)
+	bot, err := telegram.NewBot(telegramToken, false, clientId, clientSecret, ghClient)
 	if err != nil {
 		log.Panic(err)
 	}
 
 	go bot.ReadUpdates()
 
-	h := &Handler{ClientId: clientId, ClientSecret: clientSecret}
+	h := &Handler{ClientId: clientId, ClientSecret: clientSecret, bot: bot}
 
 	router := httprouter.New()
 	router.GET("/github_redirect", h.GitHubAuth)
@@ -78,7 +80,8 @@ func main() {
 
 func (h *Handler) GitHubAuth(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	code := r.URL.Query().Get("code")
-	if code == "" {
+	state := r.URL.Query().Get("state")
+	if code == "" || state == "" {
 		log.Printf("Error on received response with code from GitHub.com. Code is empty.")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -96,7 +99,7 @@ func (h *Handler) GitHubAuth(w http.ResponseWriter, r *http.Request, p httproute
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Erorr on build request object. Error: %v\n", err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -106,5 +109,15 @@ func (h *Handler) GitHubAuth(w http.ResponseWriter, r *http.Request, p httproute
 	json.NewDecoder(resp.Body).Decode(&bodyResp)
 
 	fmt.Printf("Received access_token=%s\n", bodyResp.AccessToken)
-	w.WriteHeader(http.StatusOK)
+
+	chatId, err := strconv.Atoi(state)
+	if err != nil {
+		log.Printf("Error on convert code=%s to chatId\n", code)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	h.bot.Storage.Add(int64(chatId), bodyResp.AccessToken)
+
+	http.Redirect(w, r, "https://t.me/GitHubStatBot", http.StatusMovedPermanently)
 }

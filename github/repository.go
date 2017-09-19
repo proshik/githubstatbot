@@ -9,6 +9,17 @@ type Repo struct {
 	Name *string `json:"name, omitempty"`
 }
 
+func (github *Client) User() (string, error) {
+	ctx := context.Background()
+
+	user, _, err := github.client.Users.Get(ctx, "")
+	if err != nil {
+		return "", err
+	}
+
+	return *user.Login, nil
+}
+
 func (github *Client) Repos(user string) ([]*Repo, error) {
 	ctx := context.Background()
 

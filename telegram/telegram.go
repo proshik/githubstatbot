@@ -8,6 +8,8 @@ import (
 	"sync"
 	"sort"
 	"github.com/proshik/githubstatbot/github"
+	"math/rand"
+	"strconv"
 )
 
 type Language struct {
@@ -41,7 +43,7 @@ func (b *Bot) ReadUpdates() {
 			case u := <-auth:
 				bot_res <- authCommand(&u, b.OAuth)
 			case u := <-language:
-				done := languageCommand(&u, b.client)
+				done := languageCommand(&u, b)
 				bot_res <- done
 			}
 		}
@@ -70,6 +72,7 @@ func (b *Bot) ReadUpdates() {
 		}
 	}
 }
+
 func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	buf := bytes.NewBufferString("Telegram bot written in GO. This bot show GitHub languages info by account\n")
 
@@ -88,11 +91,54 @@ func infoCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 }
 
 func authCommand(update *tgbotapi.Update, oAuth *github.OAuth) tgbotapi.Chattable {
-	return tgbotapi.NewMessage(update.Message.Chat.ID, "http://github.com/login/oauth/authorize?client_id="+oAuth.ClientId)
+	//state := randStringRunes(20)
+
+	text := "http://github.com/login/oauth/authorize?client_id=" + oAuth.ClientId + "&state=" + strconv.Itoa(int(update.Message.Chat.ID))
+	return tgbotapi.NewMessage(update.Message.Chat.ID, text)
 }
 
-func languageCommand(update *tgbotapi.Update, client *github.Client) tgbotapi.MessageConfig {
+//func init() {
+//	rand.Seed(time.Now().UnixNano())
+//}
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+//const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+func randStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
+
+//func RandStringBytesRmndr(n int) string {
+//	b := make([]byte, n)
+//	for i := range b {
+//		b[i] = letterBytes[rand.Int63() % int64(len(letterBytes))]
+//	}
+//	return string(b)
+//}
+
+func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
 	user := update.Message.CommandArguments()
+
+	token, err := bot.Storage.Get(update.Message.Chat.ID)
+	if err != nil {
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "You must authorization with github.com, command /auth")
+	}
+
+	client, err := github.NewClient(token)
+	if err != nil {
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Error on authentication. Please do re-auth with command /auth")
+	}
+
+	if user == "" {
+		user, err = client.User()
+		if err != nil {
+			return tgbotapi.NewMessage(update.Message.Chat.ID, "Not found by token. Please do re-auth=")
+		}
+	}
 
 	repos, err := client.Repos(user)
 	if err != nil {
