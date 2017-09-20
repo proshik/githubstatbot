@@ -29,15 +29,16 @@ func main() {
 	}
 
 	tokenStore := storage.NewTokenStore()
+	stateStore := storage.NewStateStore()
 
 	oAuth := github.NewOAuth(clientId, clientSecret)
 
-	bot, err := telegram.NewBot(telegramToken, false, tokenStore, oAuth)
+	bot, err := telegram.NewBot(telegramToken, false, tokenStore, stateStore, oAuth)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	handler := api.New(oAuth, tokenStore)
+	handler := api.New(oAuth, tokenStore, stateStore)
 
 	go bot.ReadUpdates()
 

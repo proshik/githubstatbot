@@ -8,8 +8,9 @@ import (
 type Handler struct {
 	oAuth      *github.OAuth
 	tokenStore *storage.TokenStore
+	stateStore *storage.StateStore
 }
 
-func New(OAuth *github.OAuth, tokenStore *storage.TokenStore) Handler {
-	return Handler{OAuth, tokenStore}
+func New(OAuth *github.OAuth, tokenStore *storage.TokenStore, stateStore *storage.StateStore) Handler {
+	return Handler{OAuth, tokenStore, stateStore}
 }

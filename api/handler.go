@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"strconv"
 )
 
 type AccessTokenReq struct {
@@ -54,14 +53,14 @@ func (h *Handler) GitHubAuth(w http.ResponseWriter, r *http.Request, p httproute
 
 	fmt.Printf("Received access_token=%s\n", bodyResp.AccessToken)
 
-	chatId, err := strconv.Atoi(state)
+	chatId, err := h.stateStore.Get(state)
 	if err != nil {
-		log.Printf("Error on convert code=%s to chatId\n", code)
+		log.Printf("Not found chatId by state. Error: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
+	//save token in storage
 	h.tokenStore.Add(int64(chatId), bodyResp.AccessToken)
-
+	//redirect user to bot page in telegram
 	http.Redirect(w, r, "https://t.me/GitHubStatBot", http.StatusMovedPermanently)
 }

@@ -9,8 +9,9 @@ import (
 
 type Bot struct {
 	bot        *tgbotapi.BotAPI
-	tokenStore *storage.TokenStore
 	oAuth      *github.OAuth
+	tokenStore *storage.TokenStore
+	stateStore *storage.StateStore
 }
 
 //type AccessToken interface {
@@ -18,7 +19,13 @@ type Bot struct {
 //	Add(chatId int64, accessToken string)
 //}
 
-func NewBot(token string, debug bool, tokenStore *storage.TokenStore, oAuth *github.OAuth) (*Bot, error) {
+func NewBot(
+	token string,
+	debug bool,
+	tokenStore *storage.TokenStore,
+	stateStore *storage.StateStore,
+	oAuth *github.OAuth) (*Bot, error) {
+
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		return nil, err
@@ -28,5 +35,5 @@ func NewBot(token string, debug bool, tokenStore *storage.TokenStore, oAuth *git
 
 	log.Printf("Authorized telegram bot for account %s", bot.Self.UserName)
 
-	return &Bot{bot, tokenStore, oAuth}, nil
+	return &Bot{bot, oAuth, tokenStore, stateStore}, nil
 }

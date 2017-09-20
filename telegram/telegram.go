@@ -9,8 +9,9 @@ import (
 	"sort"
 	"github.com/proshik/githubstatbot/github"
 	"math/rand"
-	"strconv"
 )
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 type Language struct {
 	Title      string
@@ -91,8 +92,13 @@ func infoCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 }
 
 func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
-	authUrl := bot.oAuth.BuildAuthUrl(strconv.Itoa(int(update.Message.Chat.ID)))
-
+	//generate state for url string for auth in github
+	state := randStringRunes(20)
+	//save to store [state]chatId
+	bot.stateStore.Add(state, update.Message.Chat.ID)
+	//build url
+	authUrl := bot.oAuth.BuildAuthUrl(state)
+	//build message with url for user
 	return tgbotapi.NewMessage(update.Message.Chat.ID, authUrl)
 }
 
@@ -201,7 +207,6 @@ func createLangStatText(statistics []*Language) string {
 	return buf.String()
 }
 
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 func randStringRunes(n int) string {
 	b := make([]rune, n)
 	for i := range b {
@@ -209,5 +214,3 @@ func randStringRunes(n int) string {
 	}
 	return string(b)
 }
-
-
