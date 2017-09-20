@@ -66,7 +66,8 @@ func (b *Bot) ReadUpdates() {
 			case "auth":
 				auth <- update
 			default:
-				info <- update
+				//show access commands
+				start <- update
 			}
 		} else {
 			start <- update
@@ -80,8 +81,8 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	buf.WriteString("\n")
 	buf.WriteString("Вы можете управлять мной, отправляя следующие команды:\n\n")
 	buf.WriteString("*/auth* - аутентификация через github.com\n")
-	buf.WriteString("*/languages* - посчитать статистику используемых языков в репозиториях пользователя\n")
-	buf.WriteString("*/languages <username>* - посчитать статистику используемых языков в репозиториях указанного пользователя\n")
+	buf.WriteString("*/languages* - статистика языков в репозиториях пользователя\n")
+	buf.WriteString("*/languages <username>* - статистика языков в репозиториях заданного пользователя\n")
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, buf.String())
 	msg.ParseMode = "markdown"
