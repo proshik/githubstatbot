@@ -41,7 +41,7 @@ func (b *Bot) ReadUpdates() {
 			case u := <-info:
 				bot_res <- infoCommand(&u)
 			case u := <-auth:
-				bot_res <- authCommand(&u, b.OAuth)
+				bot_res <- authCommand(&u, b)
 			case u := <-language:
 				done := languageCommand(&u, b)
 				bot_res <- done
@@ -90,40 +90,16 @@ func infoCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	return tgbotapi.NewMessage(update.Message.Chat.ID, "You must write command")
 }
 
-func authCommand(update *tgbotapi.Update, oAuth *github.OAuth) tgbotapi.Chattable {
-	//state := randStringRunes(20)
+func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
+	authUrl := bot.oAuth.BuildAuthUrl(strconv.Itoa(int(update.Message.Chat.ID)))
 
-	text := "http://github.com/login/oauth/authorize?client_id=" + oAuth.ClientId + "&state=" + strconv.Itoa(int(update.Message.Chat.ID))
-	return tgbotapi.NewMessage(update.Message.Chat.ID, text)
+	return tgbotapi.NewMessage(update.Message.Chat.ID, authUrl)
 }
-
-//func init() {
-//	rand.Seed(time.Now().UnixNano())
-//}
-
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-//const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-func randStringRunes(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
-	}
-	return string(b)
-}
-
-//func RandStringBytesRmndr(n int) string {
-//	b := make([]byte, n)
-//	for i := range b {
-//		b[i] = letterBytes[rand.Int63() % int64(len(letterBytes))]
-//	}
-//	return string(b)
-//}
 
 func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
 	user := update.Message.CommandArguments()
 
-	token, err := bot.Storage.Get(update.Message.Chat.ID)
+	token, err := bot.tokenStore.Get(update.Message.Chat.ID)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "You must authorization with github.com, command /auth")
 	}
@@ -202,7 +178,7 @@ func calcPercentages(languages map[string]int) []*Language {
 	//calculate percentage for language with less then 0.1% from total count
 	if totalByteOtherLanguages != 0 {
 		percent := round(float32(totalByteOtherLanguages)*(float32(100)/totalSum), 0.1)
-		result = append(result, &Language{"--Other languages", percent})
+		result = append(result, &Language{"Other languages", percent})
 	}
 
 	return result
@@ -224,3 +200,14 @@ func createLangStatText(statistics []*Language) string {
 
 	return buf.String()
 }
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+func randStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
+
+

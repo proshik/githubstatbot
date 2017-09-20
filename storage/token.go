@@ -1,28 +1,23 @@
-package telegram
+package storage
 
 import (
 	"sync"
-	"errors"
 	"fmt"
+	"errors"
 )
 
-func NewStorage() Storage {
-	return &Store{
+func NewTokenStore() *TokenStore {
+	return &TokenStore{
 		store: make(map[int64]string),
 	}
 }
 
-type Storage interface {
-	Get(chatId int64) (string, error)
-	Add(chatId int64, accessToken string)
-}
-
-type Store struct {
+type TokenStore struct {
 	sync.Mutex
 	store map[int64]string
 }
 
-func (s *Store) Get(chatId int64) (string, error) {
+func (s *TokenStore) Get(chatId int64) (string, error) {
 	var token string
 	s.Lock()
 	token = s.store[chatId]
@@ -34,7 +29,7 @@ func (s *Store) Get(chatId int64) (string, error) {
 	return token, nil
 }
 
-func (s *Store) Add(chatId int64, accessToken string) {
+func (s *TokenStore) Add(chatId int64, accessToken string) {
 	s.Lock()
 	s.store[chatId] = accessToken
 	s.Unlock()

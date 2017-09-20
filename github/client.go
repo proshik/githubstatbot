@@ -6,11 +6,6 @@ import (
 	"context"
 )
 
-type OAuth struct {
-	ClientId string
-	ClientSecret string
-}
-
 type Client struct {
 	client *github.Client
 }
