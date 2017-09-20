@@ -75,11 +75,13 @@ func (b *Bot) ReadUpdates() {
 }
 
 func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
-	buf := bytes.NewBufferString("Telegram bot written in GO. This bot show GitHub languages info by account\n")
+	buf := bytes.NewBufferString("Телеграм бот для отображения статистики GitHub аккаунта\n")
 
 	buf.WriteString("\n")
-	buf.WriteString("You can control me by sending these commands:\n\n")
-	buf.WriteString("*/languages <user>* - list languages for the all repositories\n")
+	buf.WriteString("Вы можете управлять мной, отправляя следующие команды:\n\n")
+	buf.WriteString("*/auth* - аутентификация через github.com\n")
+	buf.WriteString("*/languages* - посчитать статистику используемых языков в репозиториях пользователя\n")
+	buf.WriteString("*/languages <username>* - посчитать статистику используемых языков в репозиториях указанного пользователя\n")
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, buf.String())
 	msg.ParseMode = "markdown"
