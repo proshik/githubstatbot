@@ -28,30 +28,28 @@ func (b *Bot) ReadUpdates() {
 		log.Panic(err)
 	}
 
-	start := make(chan tgbotapi.Update)
-	info := make(chan tgbotapi.Update)
-	auth := make(chan tgbotapi.Update)
-	language := make(chan tgbotapi.Update)
-	bot_res := make(chan tgbotapi.Chattable)
+	startC := make(chan tgbotapi.Update)
+	authC := make(chan tgbotapi.Update)
+	languageC := make(chan tgbotapi.Update)
+
+	messages := make(chan tgbotapi.Chattable)
 
 	go func() {
 		for {
 			select {
-			case u := <-start:
-				bot_res <- startCommand(&u)
-			case u := <-info:
-				bot_res <- infoCommand(&u)
-			case u := <-auth:
-				bot_res <- authCommand(&u, b)
-			case u := <-language:
+			case u := <-startC:
+				messages <- startCommand(&u)
+			case u := <-authC:
+				messages <- authCommand(&u, b)
+			case u := <-languageC:
 				done := languageCommand(&u, b)
-				bot_res <- done
+				messages <- done
 			}
 		}
 	}()
 
 	go func() {
-		for res := range bot_res {
+		for res := range messages {
 			b.bot.Send(res)
 		}
 	}()
@@ -60,17 +58,17 @@ func (b *Bot) ReadUpdates() {
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
 			case "start":
-				start <- update
+				startC <- update
 			case "language":
-				language <- update
+				languageC <- update
 			case "auth":
-				auth <- update
+				authC <- update
 			default:
 				//show access commands
-				start <- update
+				startC <- update
 			}
 		} else {
-			start <- update
+			startC <- update
 		}
 	}
 }
@@ -80,7 +78,7 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 
 	buf.WriteString("\n")
 	buf.WriteString("Вы можете управлять мной, отправляя следующие команды:\n\n")
-	buf.WriteString("*/auth* - аутентификация через github.com\n")
+	buf.WriteString("*/auth* - авторизация в github.com\n")
 	buf.WriteString("*/languages* - статистика языков в репозиториях пользователя\n")
 	buf.WriteString("*/languages <username>* - статистика языков в репозиториях заданного пользователя\n")
 
@@ -90,10 +88,6 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	return msg
 }
 
-func infoCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
-	return tgbotapi.NewMessage(update.Message.Chat.ID, "You must write command")
-}
-
 func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	//generate state for url string for auth in github
 	state := randStringRunes(20)
@@ -101,8 +95,15 @@ func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	bot.stateStore.Add(state, update.Message.Chat.ID)
 	//build url
 	authUrl := bot.oAuth.BuildAuthUrl(state)
+	//build text for message
+	buf := bytes.NewBufferString("Для использования ботом перейдите по следующей ссылке:\n")
+	buf.WriteString("\n")
+	buf.WriteString(authUrl + "\n")
 	//build message with url for user
-	return tgbotapi.NewMessage(update.Message.Chat.ID, authUrl)
+	text := buf.String()
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+
+	return msg
 }
 
 func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
