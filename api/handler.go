@@ -6,8 +6,9 @@ import (
 	"log"
 	"bytes"
 	"encoding/json"
-	"fmt"
 )
+
+const redirectBotAddress = "https://t.me/GitHubStatBot"
 
 type AccessTokenReq struct {
 	ClientId     string `json:"client_id"`
@@ -23,13 +24,29 @@ type AccessTokenResp struct {
 
 func (h *Handler) GitHubAuth(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	code := r.URL.Query().Get("code")
+	if code == "" {
+		log.Printf("Code is empty in response from github")
+		http.Redirect(w, r, redirectBotAddress, http.StatusMovedPermanently)
+		return
+	}
 	state := r.URL.Query().Get("state")
-	if code == "" || state == "" {
-		log.Printf("Error on received response with code from GitHub.com. Code is empty.")
-		w.WriteHeader(http.StatusBadRequest)
+	if state == "" {
+		log.Printf("State is empty in response from github")
+		http.Redirect(w, r, redirectBotAddress, http.StatusMovedPermanently)
 		return
 	}
 
+	//check state on valid and get chatId by state
+	chatId, err := h.stateStore.Get(state)
+	if err != nil {
+		log.Printf("Not found chatId by state. Error: %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	//delete chatId value state store
+	h.stateStore.Delete(state)
+
+	//Build request for get accessToken
 	bodyReq := AccessTokenReq{h.oAuth.ClientId, h.oAuth.ClientSecret, code}
 	b := new(bytes.Buffer)
 	json.NewEncoder(b).Encode(bodyReq)
@@ -42,25 +59,20 @@ func (h *Handler) GitHubAuth(w http.ResponseWriter, r *http.Request, p httproute
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Erorr on build request object. Error: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		go h.bot.InformAuth(chatId, false)
+		http.Redirect(w, r, redirectBotAddress, http.StatusMovedPermanently)
 		return
 	}
 
 	defer resp.Body.Close()
-
+	//decode response with accessToken
 	var bodyResp AccessTokenResp
 	json.NewDecoder(resp.Body).Decode(&bodyResp)
 
-	fmt.Printf("Received access_token=%s\n", bodyResp.AccessToken)
-
-	chatId, err := h.stateStore.Get(state)
-	if err != nil {
-		log.Printf("Not found chatId by state. Error: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 	//save token in storage
 	h.tokenStore.Add(int64(chatId), bodyResp.AccessToken)
+	//inform user in bot about success auth
+	go h.bot.InformAuth(chatId, true)
 	//redirect user to bot page in telegram
-	http.Redirect(w, r, "https://t.me/GitHubStatBot", http.StatusMovedPermanently)
+	http.Redirect(w, r, redirectBotAddress, http.StatusMovedPermanently)
 }

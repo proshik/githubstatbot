@@ -38,7 +38,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	handler := api.New(oAuth, tokenStore, stateStore)
+	handler := api.New(oAuth, tokenStore, stateStore, bot)
 
 	go bot.ReadUpdates()
 

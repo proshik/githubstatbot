@@ -11,7 +11,18 @@ import (
 	"math/rand"
 )
 
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+var (
+	//Chains
+	//-commands
+	startC    = make(chan tgbotapi.Update)
+	authC     = make(chan tgbotapi.Update)
+	languageC = make(chan tgbotapi.Update)
+	//-send message
+	messages = make(chan tgbotapi.Chattable)
+
+	//Randomize
+	letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+)
 
 type Language struct {
 	Title      string
@@ -19,21 +30,15 @@ type Language struct {
 }
 
 func (b *Bot) ReadUpdates() {
+	//create timeout value
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
-
+	//read updates from telegram server
 	updates, err := b.bot.GetUpdatesChan(u)
-
 	if err != nil {
 		log.Panic(err)
 	}
-
-	startC := make(chan tgbotapi.Update)
-	authC := make(chan tgbotapi.Update)
-	languageC := make(chan tgbotapi.Update)
-
-	messages := make(chan tgbotapi.Chattable)
-
+	//handle commands from channels
 	go func() {
 		for {
 			select {
@@ -47,13 +52,15 @@ func (b *Bot) ReadUpdates() {
 			}
 		}
 	}()
-
+	//Отправка сообщений пользователям.
+	//Отдельно от предыдущего блока т.к. нельзя в select нельзя обрабатывать каналы команд из которох читается(*С)
+	//и куда записыватеся(messages)
 	go func() {
 		for res := range messages {
 			b.bot.Send(res)
 		}
 	}()
-
+	//read updates and send to channels
 	for update := range updates {
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
@@ -73,13 +80,21 @@ func (b *Bot) ReadUpdates() {
 	}
 }
 
+func (b *Bot) InformAuth(chatId int64, result bool) {
+	if result {
+		messages <- tgbotapi.NewMessage(chatId, "GitHub аккаунт был успешно подключен!")
+	} else {
+		messages <- tgbotapi.NewMessage(chatId, "Произошла ошибка при подключении GitHub аккаунта!")
+	}
+}
+
 func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	buf := bytes.NewBufferString("Телеграм бот для отображения статистики GitHub аккаунта\n")
 
 	buf.WriteString("\n")
 	buf.WriteString("Вы можете управлять мной, отправляя следующие команды:\n\n")
 	buf.WriteString("*/auth* - авторизация в github.com\n")
-	buf.WriteString("*/languages* - статистика языков в репозиториях пользователя\n")
+	buf.WriteString("*/language* - статистика языков в репозиториях пользователя\n")
 	buf.WriteString("*/languages <username>* - статистика языков в репозиториях заданного пользователя\n")
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, buf.String())
@@ -96,7 +111,7 @@ func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	//build url
 	authUrl := bot.oAuth.BuildAuthUrl(state)
 	//build text for message
-	buf := bytes.NewBufferString("Для использования ботом перейдите по следующей ссылке:\n")
+	buf := bytes.NewBufferString("Для авторизации перейдите по следующей ссылке:\n")
 	buf.WriteString("\n")
 	buf.WriteString(authUrl + "\n")
 	//build message with url for user
@@ -107,37 +122,32 @@ func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 }
 
 func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
-	user := update.Message.CommandArguments()
-
+	//found token by chatId in store
 	token, err := bot.tokenStore.Get(update.Message.Chat.ID)
 	if err != nil {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "You must authorization with github.com, command /auth")
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Необходимо выполнить авторизацию. Команда /auth")
 	}
+	//create github client
+	client := github.NewClient(token)
 
-	client, err := github.NewClient(token)
+	//receipt info for user
+	user, err := client.User()
 	if err != nil {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "Error on authentication. Please do re-auth with command /auth")
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Ошибка получения данных. Выполните повторную авторизацию")
 	}
-
-	if user == "" {
-		user, err = client.User()
-		if err != nil {
-			return tgbotapi.NewMessage(update.Message.Chat.ID, "Not found by token. Please do re-auth=")
-		}
-	}
-
+	//receipt user repositories
 	repos, err := client.Repos(user)
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Not found repos for user="+user)
 	}
-
+	//concurrent receipt language info in repositories of an user
 	wg := sync.WaitGroup{}
 	languageChan := make(chan map[string]int)
 	for _, repo := range repos {
 		wg.Add(1)
 		go func(wg *sync.WaitGroup, r *github.Repo) {
 			defer wg.Done()
-
+			//receipt language info
 			lang, err := client.Language(user, *r.Name)
 			if err != nil {
 				log.Printf("Error on request language for user=%s, repo=%s", user, *r.Name)
@@ -146,19 +156,19 @@ func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
 		}(&wg, repo)
 
 	}
-
+	//wait before not will be receipt language info
 	go func() {
 		wg.Wait()
 		close(languageChan)
 	}()
-
+	//calculate sum of a bytes in each repository by language name
 	statistics := make(map[string]int)
 	for stat := range languageChan {
 		for k, v := range stat {
 			statistics[k] = statistics[k] + v
 		}
 	}
-
+	//create messages for user
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, createLangStatText(calcPercentages(statistics)))
 	msg.ParseMode = "markdown"
 

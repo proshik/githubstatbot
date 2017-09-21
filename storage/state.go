@@ -34,3 +34,9 @@ func (s *StateStore) Add(state string, chatId int64) {
 	s.store[state] = chatId
 	s.Unlock()
 }
+
+func (s *StateStore) Delete(key string) {
+	s.Lock()
+	delete(s.store, key)
+	s.Unlock()
+}
