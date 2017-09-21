@@ -109,6 +109,11 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 }
 
 func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
+	//check, maybe user already authorize
+	token, _ := bot.tokenStore.Get(update.Message.Chat.ID)
+	if token != "" {
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Вы уже авторизованы!")
+	}
 	//generate state for url string for auth in github
 	state := randStringRunes(20)
 	//save to store [state]chatId
