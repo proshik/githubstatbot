@@ -43,7 +43,7 @@ func main() {
 	go bot.ReadUpdates()
 
 	router := httprouter.New()
-	router.GET("/github_redirect", handler.GitHubAuth)
+	router.GET("/github_redirect", handler.GitHubRedirect)
 
 	log.Println("Service is waiting for requests...")
 

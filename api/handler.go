@@ -6,9 +6,8 @@ import (
 	"log"
 	"bytes"
 	"encoding/json"
+	"github.com/proshik/githubstatbot/telegram"
 )
-
-const redirectBotAddress = "https://t.me/GitHubStatBot"
 
 type AccessTokenReq struct {
 	ClientId     string `json:"client_id"`
@@ -22,17 +21,17 @@ type AccessTokenResp struct {
 	Scope       string `json:"scope"`
 }
 
-func (h *Handler) GitHubAuth(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func (h *Handler) GitHubRedirect(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	code := r.URL.Query().Get("code")
 	if code == "" {
 		log.Printf("Code is empty in response from github")
-		http.Redirect(w, r, redirectBotAddress, http.StatusMovedPermanently)
+		http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
 		return
 	}
 	state := r.URL.Query().Get("state")
 	if state == "" {
 		log.Printf("State is empty in response from github")
-		http.Redirect(w, r, redirectBotAddress, http.StatusMovedPermanently)
+		http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
 		return
 	}
 
@@ -60,7 +59,7 @@ func (h *Handler) GitHubAuth(w http.ResponseWriter, r *http.Request, p httproute
 	if err != nil {
 		log.Printf("Erorr on build request object. Error: %v\n", err)
 		go h.bot.InformAuth(chatId, false)
-		http.Redirect(w, r, redirectBotAddress, http.StatusMovedPermanently)
+		http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
 		return
 	}
 
@@ -74,5 +73,5 @@ func (h *Handler) GitHubAuth(w http.ResponseWriter, r *http.Request, p httproute
 	//inform user in bot about success auth
 	go h.bot.InformAuth(chatId, true)
 	//redirect user to bot page in telegram
-	http.Redirect(w, r, redirectBotAddress, http.StatusMovedPermanently)
+	http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
 }
