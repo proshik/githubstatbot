@@ -93,9 +93,11 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 
 	buf.WriteString("\n")
 	buf.WriteString("Вы можете управлять мной, отправляя следующие команды:\n\n")
-	buf.WriteString("*/auth* - авторизация в github.com\n")
-	buf.WriteString("*/language* - статистика языков в репозиториях пользователя\n")
-	buf.WriteString("*/languages <username>* - статистика языков в репозиториях заданного пользователя\n")
+	buf.WriteString("*/auth* - авторизация через OAuth\n")
+	buf.WriteString("*/stat* - статистика авторизованного пользователя\n")
+	buf.WriteString("*/account <username>* - статистика по заданному пользователю\n")
+	buf.WriteString("*/language* - статистика языков в репозиториях авторизованного пользователя\n")
+	buf.WriteString("*/cancel* - отмена авторизации\n")
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, buf.String())
 	msg.ParseMode = "markdown"
