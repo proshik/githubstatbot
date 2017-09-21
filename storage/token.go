@@ -34,3 +34,9 @@ func (s *TokenStore) Add(chatId int64, accessToken string) {
 	s.store[chatId] = accessToken
 	s.Unlock()
 }
+
+func (s *TokenStore) Delete(key int64) {
+	s.Lock()
+	delete(s.store, key)
+	s.Unlock()
+}

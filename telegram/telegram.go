@@ -17,6 +17,7 @@ var (
 	startC    = make(chan tgbotapi.Update)
 	authC     = make(chan tgbotapi.Update)
 	languageC = make(chan tgbotapi.Update)
+	cancelC   = make(chan tgbotapi.Update)
 	//-send message
 	messages = make(chan tgbotapi.Chattable)
 
@@ -47,8 +48,9 @@ func (b *Bot) ReadUpdates() {
 			case u := <-authC:
 				messages <- authCommand(&u, b)
 			case u := <-languageC:
-				done := languageCommand(&u, b)
-				messages <- done
+				messages <- languageCommand(&u, b)
+			case u := <-cancelC:
+				messages <- cancelCommand(&u, b)
 			}
 		}
 	}()
@@ -66,10 +68,12 @@ func (b *Bot) ReadUpdates() {
 			switch update.Message.Command() {
 			case "start":
 				startC <- update
-			case "language":
-				languageC <- update
 			case "auth":
 				authC <- update
+			case "language":
+				languageC <- update
+			case "cancel":
+				cancelC <- update
 			default:
 				//show access commands
 				startC <- update
@@ -90,18 +94,17 @@ func (b *Bot) InformAuth(chatId int64, result bool) {
 
 func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	buf := bytes.NewBufferString("Телеграм бот для отображения статистики GitHub аккаунта\n")
-
+	//descriptions of commands
 	buf.WriteString("\n")
 	buf.WriteString("Вы можете управлять мной, отправляя следующие команды:\n\n")
 	buf.WriteString("*/auth* - авторизация через OAuth\n")
-	buf.WriteString("*/stat* - статистика авторизованного пользователя\n")
-	buf.WriteString("*/account <username>* - статистика по заданному пользователю\n")
-	buf.WriteString("*/language* - статистика языков в репозиториях авторизованного пользователя\n")
+	//buf.WriteString("*/stat* - статистика по репозиториям\n")
+	//buf.WriteString("*/stat <username>* - статистика по заданному пользователю\n")
+	buf.WriteString("*/language* - статистика используемых языков в репозиториях\n")
 	buf.WriteString("*/cancel* - отмена авторизации\n")
-
+	//create message
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, buf.String())
 	msg.ParseMode = "markdown"
-
 	return msg
 }
 
@@ -119,7 +122,6 @@ func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	//build message with url for user
 	text := buf.String()
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
-
 	return msg
 }
 
@@ -133,14 +135,14 @@ func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
 	client := github.NewClient(token)
 
 	//receipt info for user
-	user, err := client.User()
+	username, err := client.User()
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Ошибка получения данных. Выполните повторную авторизацию")
 	}
 	//receipt user repositories
-	repos, err := client.Repos(user)
+	repos, err := client.Repos(username)
 	if err != nil {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "Not found repos for user="+user)
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Not found repos for username="+username)
 	}
 	//concurrent receipt language info in repositories of an user
 	wg := sync.WaitGroup{}
@@ -150,9 +152,9 @@ func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
 		go func(wg *sync.WaitGroup, r *github.Repo) {
 			defer wg.Done()
 			//receipt language info
-			lang, err := client.Language(user, *r.Name)
+			lang, err := client.Language(username, *r.Name)
 			if err != nil {
-				log.Printf("Error on request language for user=%s, repo=%s", user, *r.Name)
+				log.Printf("Error on request language for user=%s, repo=%s", username, *r.Name)
 			}
 			languageChan <- lang
 		}(&wg, repo)
@@ -170,11 +172,24 @@ func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
 			statistics[k] = statistics[k] + v
 		}
 	}
-	//create messages for user
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, createLangStatText(calcPercentages(statistics)))
+	//create text messages for user
+	percentages := calcPercentages(statistics)
+	text := createLangStatText(username, percentages)
+	//create messages
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 	msg.ParseMode = "markdown"
-
 	return msg
+}
+
+func cancelCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
+	//check on exists token in store
+	_, err := bot.tokenStore.Get(update.Message.Chat.ID)
+	if err != nil {
+		return tgbotapi.NewMessage(update.Message.Chat.ID, "Вы не авторизованы!")
+	}
+	//delete token by chatId. Exactly remove user from store
+	bot.tokenStore.Delete(update.Message.Chat.ID)
+	return tgbotapi.NewMessage(update.Message.Chat.ID, "GitHub аккаунт отключен!")
 }
 
 func calcPercentages(languages map[string]int) []*Language {
@@ -202,7 +217,6 @@ func calcPercentages(languages map[string]int) []*Language {
 		percent := round(float32(totalByteOtherLanguages)*(float32(100)/totalSum), 0.1)
 		result = append(result, &Language{"Other languages", percent})
 	}
-
 	return result
 }
 
@@ -213,13 +227,12 @@ func round(x, unit float32) float32 {
 	return float32(int32(x/unit-0.5)) * unit
 }
 
-func createLangStatText(statistics []*Language) string {
+func createLangStatText(username string, statistics []*Language) string {
 	buf := bytes.NewBufferString("")
 
 	for _, l := range statistics {
 		buf.WriteString(fmt.Sprintf("*%s* %.1f%%\n", l.Title, l.Percentage))
 	}
-
 	return buf.String()
 }
 
