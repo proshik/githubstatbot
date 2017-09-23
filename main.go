@@ -9,7 +9,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/proshik/githubstatbot/api"
 	"github.com/proshik/githubstatbot/storage"
-	"github.com/proshik/githubstatbot/utils"
 )
 
 func main() {
@@ -34,22 +33,17 @@ func main() {
 		log.Panic("Telegram token is empty")
 	}
 
-	//tokenStore := storage.NewTokenStore()
+	db := storage.New(path)
 	stateStore := storage.NewStateStore()
-
-	db := db.New(path)
-
 	oAuth := github.NewOAuth(clientId, clientSecret)
 
 	bot, err := telegram.NewBot(telegramToken, false, db, stateStore, oAuth)
 	if err != nil {
 		log.Panic(err)
 	}
-
-	handler := api.New(oAuth, db, stateStore, bot)
-
 	go bot.ReadUpdates()
 
+	handler := api.New(oAuth, db, stateStore, bot)
 	router := httprouter.New()
 	router.GET("/github_redirect", handler.GitHubRedirect)
 

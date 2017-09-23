@@ -1,9 +1,10 @@
-package db
+package storage
 
 import (
 	"github.com/boltdb/bolt"
 	"strconv"
 	"time"
+	"log"
 )
 
 var tokenBucket = "token"
@@ -29,19 +30,30 @@ func New(path string) *Store {
 	}
 }
 
-func (s *Store) Add(chatId int64, accessToken string) {
-	db, _ := open(s)
+func (s *Store) Add(chatId int64, accessToken string) error {
+	db, err := open(s)
+	if err != nil {
+		return err
+	}
 	defer db.Close()
 
-	db.Update(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(tokenBucket))
 		err := b.Put([]byte(strconv.Itoa(int(chatId))), []byte(accessToken))
 		return err
 	})
+	if err != nil {
+		log.Printf("error on add token, error: %s\n", err)
+		return err
+	}
+	return nil
 }
 
-func (s *Store) Get(chatId int64) string {
-	db, _ := open(s)
+func (s *Store) Get(chatId int64) (string, error) {
+	db, err := open(s)
+	if err != nil {
+		return "", err
+	}
 	defer db.Close()
 
 	var token []byte
@@ -51,18 +63,26 @@ func (s *Store) Get(chatId int64) string {
 		return nil
 	})
 
-	return string(token)
+	return string(token), nil
 }
 
-func (s *Store) Delete(chatId int64) {
-	db, _ := open(s)
+func (s *Store) Delete(chatId int64) error {
+	db, err := open(s)
+	if err != nil {
+		return err
+	}
 	defer db.Close()
 
-	db.Update(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(tokenBucket))
 		err := b.Delete([]byte(strconv.Itoa(int(chatId))))
 		return err
 	})
+	if err != nil {
+		log.Printf("error on delete token, error: %s\n", err)
+		return err
+	}
+	return nil
 }
 
 func open(s *Store) (*bolt.DB, error) {

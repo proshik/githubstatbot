@@ -15,20 +15,14 @@ var (
 type Bot struct {
 	bot        *tgbotapi.BotAPI
 	oAuth      *github.OAuth
-	tokenStore AccessTokenStorage
+	tokenStore storage.AccessTokenStorage
 	stateStore *storage.StateStore
-}
-
-type AccessTokenStorage interface {
-	Get(chatId int64) string
-	Add(chatId int64, accessToken string)
-	Delete(key int64)
 }
 
 func NewBot(
 	token string,
 	debug bool,
-	tokenStore AccessTokenStorage,
+	tokenStore storage.AccessTokenStorage,
 	stateStore *storage.StateStore,
 	oAuth *github.OAuth) (*Bot, error) {
 

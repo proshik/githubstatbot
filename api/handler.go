@@ -58,7 +58,7 @@ func (h *Handler) GitHubRedirect(w http.ResponseWriter, r *http.Request, p httpr
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Erorr on build request object. Error: %v\n", err)
-		go h.bot.InformAuth(chatId, false)
+		h.bot.InformAuth(chatId, false)
 		http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
 		return
 	}
@@ -71,7 +71,7 @@ func (h *Handler) GitHubRedirect(w http.ResponseWriter, r *http.Request, p httpr
 	//save token in storage
 	h.tokenStore.Add(int64(chatId), bodyResp.AccessToken)
 	//inform user in bot about success auth
-	go h.bot.InformAuth(chatId, true)
+	h.bot.InformAuth(chatId, true)
 	//redirect user to bot page in telegram
 	http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
 }

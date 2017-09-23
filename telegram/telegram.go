@@ -110,7 +110,10 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 
 func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	//check, maybe user already authorize
-	token := bot.tokenStore.Get(update.Message.Chat.ID)
+	token, err := bot.tokenStore.Get(update.Message.Chat.ID)
+	if err != nil {
+		return errorMessage(update)
+	}
 	if token != "" {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Вы уже авторизованы!")
 	}
@@ -132,7 +135,10 @@ func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 
 func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
 	//found token by chatId in store
-	token := bot.tokenStore.Get(update.Message.Chat.ID)
+	token, err := bot.tokenStore.Get(update.Message.Chat.ID)
+	if err != nil {
+		return errorMessage(update)
+	}
 	if token == "" {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Необходимо выполнить авторизацию. Команда /auth")
 	}
@@ -188,7 +194,10 @@ func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
 
 func cancelCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	//check on exists token in store
-	token := bot.tokenStore.Get(update.Message.Chat.ID)
+	token, err := bot.tokenStore.Get(update.Message.Chat.ID)
+	if err != nil {
+		return errorMessage(update)
+	}
 	if token == "" {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Вы не авторизованы!")
 	}
@@ -225,20 +234,25 @@ func calcPercentages(languages map[string]int) []*Language {
 	return result
 }
 
+func errorMessage(update *tgbotapi.Update) tgbotapi.MessageConfig {
+	return tgbotapi.NewMessage(update.Message.Chat.ID, "Необходимо выполнить авторизацию. Команда /auth")
+}
+
+func createLangStatText(username string, statistics []*Language) string {
+	buf := bytes.NewBufferString("")
+	buf.WriteString(fmt.Sprintf("Username: *%s*\n", username))
+	buf.WriteString("\n")
+	for _, l := range statistics {
+		buf.WriteString(fmt.Sprintf("*%s* %.1f%%\n", l.Title, l.Percentage))
+	}
+	return buf.String()
+}
+
 func round(x, unit float32) float32 {
 	if x > 0 {
 		return float32(int32(x/unit+0.5)) * unit
 	}
 	return float32(int32(x/unit-0.5)) * unit
-}
-
-func createLangStatText(username string, statistics []*Language) string {
-	buf := bytes.NewBufferString("")
-
-	for _, l := range statistics {
-		buf.WriteString(fmt.Sprintf("*%s* %.1f%%\n", l.Title, l.Percentage))
-	}
-	return buf.String()
 }
 
 func randStringRunes(n int) string {
