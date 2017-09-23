@@ -110,7 +110,7 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 
 func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	//check, maybe user already authorize
-	token, _ := bot.tokenStore.Get(update.Message.Chat.ID)
+	token := bot.tokenStore.Get(update.Message.Chat.ID)
 	if token != "" {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Вы уже авторизованы!")
 	}
@@ -132,8 +132,8 @@ func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 
 func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
 	//found token by chatId in store
-	token, err := bot.tokenStore.Get(update.Message.Chat.ID)
-	if err != nil {
+	token := bot.tokenStore.Get(update.Message.Chat.ID)
+	if token == "" {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Необходимо выполнить авторизацию. Команда /auth")
 	}
 	//create github client
@@ -188,8 +188,8 @@ func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
 
 func cancelCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	//check on exists token in store
-	_, err := bot.tokenStore.Get(update.Message.Chat.ID)
-	if err != nil {
+	token := bot.tokenStore.Get(update.Message.Chat.ID)
+	if token == "" {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, "Вы не авторизованы!")
 	}
 	//delete token by chatId. Exactly remove user from store

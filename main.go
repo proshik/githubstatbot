@@ -9,12 +9,18 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/proshik/githubstatbot/api"
 	"github.com/proshik/githubstatbot/storage"
+	"github.com/proshik/githubstatbot/utils"
 )
 
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Panic("Port is empty")
+	}
+
+	path := os.Getenv("DB_PATH")
+	if path == "" {
+		log.Panic("DB path is empty")
 	}
 
 	clientId := os.Getenv("GITHUB_CLIENT_ID")
@@ -28,17 +34,19 @@ func main() {
 		log.Panic("Telegram token is empty")
 	}
 
-	tokenStore := storage.NewTokenStore()
+	//tokenStore := storage.NewTokenStore()
 	stateStore := storage.NewStateStore()
+
+	db := db.New(path)
 
 	oAuth := github.NewOAuth(clientId, clientSecret)
 
-	bot, err := telegram.NewBot(telegramToken, false, tokenStore, stateStore, oAuth)
+	bot, err := telegram.NewBot(telegramToken, false, db, stateStore, oAuth)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	handler := api.New(oAuth, tokenStore, stateStore, bot)
+	handler := api.New(oAuth, db, stateStore, bot)
 
 	go bot.ReadUpdates()
 

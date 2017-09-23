@@ -2,8 +2,6 @@ package storage
 
 import (
 	"sync"
-	"fmt"
-	"errors"
 )
 
 func NewTokenStore() *TokenStore {
@@ -17,16 +15,10 @@ type TokenStore struct {
 	store map[int64]string
 }
 
-func (s *TokenStore) Get(chatId int64) (string, error) {
-	var token string
+func (s *TokenStore) Get(chatId int64) string {
 	s.Lock()
-	token = s.store[chatId]
-	s.Unlock()
-
-	if token == "" {
-		return "", errors.New(fmt.Sprintf("Token not found for chatId=%s\n", chatId))
-	}
-	return token, nil
+	defer s.Unlock()
+	return s.store[chatId]
 }
 
 func (s *TokenStore) Add(chatId int64, accessToken string) {
