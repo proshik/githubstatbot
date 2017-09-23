@@ -20,7 +20,6 @@ var (
 	cancelC   = make(chan tgbotapi.Update)
 	//-send message
 	messages = make(chan tgbotapi.Chattable)
-
 	//Randomize
 	letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 )

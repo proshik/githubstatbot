@@ -1,17 +1,21 @@
 # GitHubStatBot
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/proshik/githubstatbot)](https://goreportcard.com/report/github.com/proshik/githubstatbot)
+[![Build Status](https://travis-ci.org/proshik/mif.svg?branch=master)](https://travis-ci.org/proshik/githubstatbot)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/proshik/githubstatbot/issues)
+
 Telegram bot written in GO. This bot show GitHub statistic by languages, stars, forks and commits.
 
 ## Commands
-!! /auth* - авторизация
+/auth* - авторизация
 
-! /stat - статистика пользователя
+/stat - статистика пользователя
 
-! /account <username> - статистика по заданному пользователю
+/account <username> - статистика по заданному пользователю
 
-! /language - статистика языков в репозиториях авторизованного пользователя
+/language - статистика языков в репозиториях авторизованного пользователя
 
-! /language <repo_name> - статистика языков заданного репозитория авторизованного пользователя
+/language <repo_name> - статистика языков заданного репозитория авторизованного пользователя
 
 /star - статистика по звездам в репозиториях авторизованного пользователя
 
@@ -23,7 +27,7 @@ Telegram bot written in GO. This bot show GitHub statistic by languages, stars, 
 
 /commit <day, week, montrh, quarter, year> - статистика по коммитам авторизованного пользователя
 
-! /cancel - отмена авторизации
+/cancel - отмена авторизации
   
 ## Quick run
 
