@@ -5,7 +5,7 @@ import (
 )
 
 type Repo struct {
-	Name *string `json:"name, omitempty"`
+	Name *string `json:"name,omitempty"`
 }
 
 func (github *Client) Repos(user string) ([]*Repo, error) {
