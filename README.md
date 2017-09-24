@@ -1,6 +1,7 @@
 # GitHubStatBot
 
 [![Build Status](https://travis-ci.org/proshik/githubstatbot.svg?branch=master)](https://travis-ci.org/proshik/githubstatbot)
+[![Go Report Card](https://goreportcard.com/badge/github.com/proshik/githubstatbot)](https://goreportcard.com/report/github.com/proshik/githubstatbot)
 [![codecov](https://codecov.io/gh/proshik/jalmew/branch/master/graph/badge.svg)](https://codecov.io/gh/proshik/githubstatbot)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/proshik/githubstatbot/issues)
 
