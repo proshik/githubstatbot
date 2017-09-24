@@ -1,9 +1,9 @@
 package github
 
 import (
-	"testing"
-	"net/http"
 	"fmt"
+	"net/http"
+	"testing"
 )
 
 func TestLanguagesFound(t *testing.T) {

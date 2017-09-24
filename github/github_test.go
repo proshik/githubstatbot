@@ -1,10 +1,10 @@
 package github
 
 import (
-	"net/http/httptest"
-	"net/http"
-	"net/url"
 	"github.com/google/go-github/github"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
@@ -33,7 +33,6 @@ func startServer() *http.ServeMux {
 func teardown() {
 	server.Close()
 }
-
 
 func TestNewClient(t *testing.T) {
 	token := "token"

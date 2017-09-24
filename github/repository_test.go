@@ -1,10 +1,10 @@
 package github
 
 import (
-	"testing"
-	"net/http"
 	"fmt"
+	"net/http"
 	"reflect"
+	"testing"
 )
 
 func TestReposFoundByUser(t *testing.T) {
@@ -28,7 +28,7 @@ func TestReposFoundByUser(t *testing.T) {
 	}
 }
 
-func TestReposNotFoundByUser(t *testing.T){
+func TestReposNotFoundByUser(t *testing.T) {
 	startServer()
 	defer teardown()
 
@@ -57,4 +57,4 @@ func TestReposSuccess(t *testing.T) {
 		t.Errorf("Not found not one repository by username=%s", user)
 	}
 }
- */
+*/

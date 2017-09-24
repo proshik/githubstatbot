@@ -2,9 +2,9 @@ package storage
 
 import (
 	"github.com/boltdb/bolt"
+	"log"
 	"strconv"
 	"time"
-	"log"
 )
 
 var tokenBucket = "token"
@@ -20,7 +20,7 @@ func New(path string) *Store {
 	}
 	defer db.Close()
 
-	err = db.Update(func(tx *bolt.Tx) error {
+	db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(tokenBucket))
 		return err
 	})

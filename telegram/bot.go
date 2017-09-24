@@ -1,10 +1,10 @@
 package telegram
 
 import (
-	"gopkg.in/telegram-bot-api.v4"
-	"log"
 	"github.com/proshik/githubstatbot/github"
 	"github.com/proshik/githubstatbot/storage"
+	"gopkg.in/telegram-bot-api.v4"
+	"log"
 )
 
 var (

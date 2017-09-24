@@ -1,14 +1,14 @@
 package telegram
 
 import (
-	"gopkg.in/telegram-bot-api.v4"
-	"log"
 	"bytes"
 	"fmt"
-	"sync"
-	"sort"
 	"github.com/proshik/githubstatbot/github"
+	"gopkg.in/telegram-bot-api.v4"
+	"log"
 	"math/rand"
+	"sort"
+	"sync"
 )
 
 var (

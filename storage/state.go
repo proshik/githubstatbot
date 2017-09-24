@@ -1,9 +1,9 @@
 package storage
 
 import (
-	"sync"
-	"fmt"
 	"errors"
+	"fmt"
+	"sync"
 )
 
 func NewStateStore() *StateStore {
