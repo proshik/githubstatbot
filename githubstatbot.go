@@ -12,7 +12,7 @@ import (
 )
 
 //For run:
-//env PORT=8080 DB_PATH=/data/githubstatbot/boltdb.db GITHUB_CLIENT_ID= GITHUB_CLIENT_SECRET= TELEGRAM_TOKEN= go run main.go
+//env PORT=8080 DB_PATH=/data/githubstatbot/boltdb.db GITHUB_CLIENT_ID= GITHUB_CLIENT_SECRET= TELEGRAM_TOKEN= go run githubstatbot.go
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
