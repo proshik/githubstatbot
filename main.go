@@ -1,17 +1,18 @@
 package main
 
 import (
-	"os"
-	"log"
-	"net/http"
-	"github.com/proshik/githubstatbot/github"
-	"github.com/proshik/githubstatbot/telegram"
 	"github.com/julienschmidt/httprouter"
 	"github.com/proshik/githubstatbot/api"
+	"github.com/proshik/githubstatbot/github"
 	"github.com/proshik/githubstatbot/storage"
+	"github.com/proshik/githubstatbot/telegram"
+	"log"
+	"net/http"
+	"os"
 )
-// How to run:
-// env PORT=8080 DB_PATH=/data/githubstatbot/boltdb.db GITHUB_CLIENT_ID= GITHUB_CLIENT_SECRET= TELEGRAM_TOKEN= go run main.go
+
+//For run:
+//env PORT=8080 DB_PATH=/data/githubstatbot/boltdb.db GITHUB_CLIENT_ID= GITHUB_CLIENT_SECRET= TELEGRAM_TOKEN= go run main.go
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -23,9 +24,9 @@ func main() {
 		log.Panic("DB path is empty")
 	}
 
-	clientId := os.Getenv("GITHUB_CLIENT_ID")
+	clientID := os.Getenv("GITHUB_CLIENT_ID")
 	clientSecret := os.Getenv("GITHUB_CLIENT_SECRET")
-	if clientId == "" || clientSecret == "" {
+	if clientID == "" || clientSecret == "" {
 		log.Panic("ClientId or clientSecret is empty")
 	}
 
@@ -36,7 +37,7 @@ func main() {
 
 	db := storage.New(path)
 	stateStore := storage.NewStateStore()
-	oAuth := github.NewOAuth(clientId, clientSecret)
+	oAuth := github.NewOAuth(clientID, clientSecret)
 
 	bot, err := telegram.NewBot(telegramToken, false, db, stateStore, oAuth)
 	if err != nil {

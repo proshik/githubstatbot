@@ -1,12 +1,12 @@
 package api
 
 import (
-	"net/http"
-	"github.com/julienschmidt/httprouter"
-	"log"
 	"bytes"
 	"encoding/json"
+	"github.com/julienschmidt/httprouter"
 	"github.com/proshik/githubstatbot/telegram"
+	"log"
+	"net/http"
 )
 
 type AccessTokenReq struct {

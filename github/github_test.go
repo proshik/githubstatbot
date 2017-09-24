@@ -37,12 +37,7 @@ func teardown() {
 
 func TestNewClient(t *testing.T) {
 	token := "token"
-
-	_, err := NewClient(token)
-	if err != nil {
-		t.Fatal(err)
-	}
-
+	_ = NewClient(token)
 }
 
 // String is a helper routine that allocates a new string value
