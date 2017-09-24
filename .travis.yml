@@ -2,7 +2,7 @@ language: go
 
 go:
   - 1.9
-  - tip
+  - master
 
 script: make test
 
