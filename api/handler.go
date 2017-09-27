@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
 	"github.com/proshik/githubstatbot/telegram"
+	"io"
 	"log"
 	"net/http"
-	"io"
 )
 
 type AccessTokenReq struct {

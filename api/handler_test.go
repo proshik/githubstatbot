@@ -1,14 +1,14 @@
 package api
 
 import (
-	"testing"
 	"github.com/julienschmidt/httprouter"
-	"net/http/httptest"
-	"net/http"
-	"io/ioutil"
 	"github.com/proshik/githubstatbot/github"
 	"github.com/proshik/githubstatbot/storage"
 	"github.com/proshik/githubstatbot/telegram"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
 type TokenStoreMock struct {
