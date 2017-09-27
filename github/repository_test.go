@@ -13,7 +13,7 @@ func TestReposFoundByUser(t *testing.T) {
 
 	var user = "proshik"
 	mux.HandleFunc(fmt.Sprintf("/users/%s/repos", user), func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, `[{"name":"repo1"}, {"name":"repo2"}]`)
+		fmt.Fprint(w, `[{"name":"repo1", "fork":false}, {"name":"repo2","fork":false}, {"name":"repo3","fork":true}]`)
 	})
 
 	client := &Client{client: client}

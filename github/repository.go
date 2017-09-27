@@ -18,6 +18,9 @@ func (github *Client) Repos(user string) ([]*Repo, error) {
 
 	result := make([]*Repo, 0)
 	for _, r := range repos {
+		if *r.Fork {
+			continue
+		}
 		result = append(result, &Repo{r.Name})
 	}
 
