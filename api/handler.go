@@ -7,6 +7,7 @@ import (
 	"github.com/proshik/githubstatbot/telegram"
 	"log"
 	"net/http"
+	"io"
 )
 
 type AccessTokenReq struct {
@@ -19,6 +20,10 @@ type AccessTokenResp struct {
 	AccessToken string `json:"access_token"`
 	TokenType   string `json:"token_type"`
 	Scope       string `json:"scope"`
+}
+
+func (h *Handler) Index(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	io.WriteString(w, "<html><body>Welcome!</body></html>")
 }
 
 func (h *Handler) GitHubRedirect(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

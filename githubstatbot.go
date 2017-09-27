@@ -47,6 +47,7 @@ func main() {
 
 	handler := api.New(oAuth, db, stateStore, bot)
 	router := httprouter.New()
+	router.GET("/", handler.Index)
 	router.GET("/github_redirect", handler.GitHubRedirect)
 
 	log.Println("Service is waiting for requests...")
