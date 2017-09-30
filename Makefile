@@ -23,7 +23,11 @@ endif
 BUILDTAGS=
 
 .PHONY: all
-all: build
+all: git build
+
+.PHONY
+git:
+	go get -u github.com/proshik/githubstatbot
 
 .PHONY: build
 build: vendor test
