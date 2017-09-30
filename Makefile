@@ -23,19 +23,14 @@ endif
 BUILDTAGS=
 
 .PHONY: all
-all: git build
-
-.PHONY: git
-git:
-	@echo "+ $@"
-	go get -u github.com/proshik/githubstatbot
+all: build
 
 .PHONY: build
 build: vendor test
 	@echo "+ $@"
 	@CGO_ENABLED=0 GOOS=${GOOS} GOARCH=${GOARCH} go build -a -installsuffix cgo \
 		-ldflags "-s -w -X ${PROJECT}/pkg/version.RELEASE=${RELEASE} -X ${PROJECT}/pkg/version.COMMIT=${COMMIT} -X ${PROJECT}/pkg/version.REPO=${REPO_INFO}" \
-		-o bin/${GOOS}-${GOARCH}/${APP} ${PROJECT}
+		-o /bin/${GOOS}-${GOARCH}/${APP} ${PROJECT}
 
 .PHONY: vendor
 vendor: clean bootstrap
