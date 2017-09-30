@@ -25,8 +25,9 @@ BUILDTAGS=
 .PHONY: all
 all: git build
 
-.PHONY
+.PHONY: git
 git:
+	@echo "+ $@"
 	go get -u github.com/proshik/githubstatbot
 
 .PHONY: build
