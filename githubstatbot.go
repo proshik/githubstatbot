@@ -10,11 +10,11 @@ import (
 	"github.com/proshik/githubstatbot/storage"
 	"github.com/proshik/githubstatbot/telegram"
 	"golang.org/x/crypto/acme/autocert"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"time"
-	"io"
 )
 
 //For run:

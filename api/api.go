@@ -5,11 +5,6 @@ import (
 	"github.com/proshik/githubstatbot/storage"
 	"github.com/proshik/githubstatbot/telegram"
 	"net/http"
-	"time"
-	"golang.org/x/crypto/acme/autocert"
-	"crypto/tls"
-	"fmt"
-	"log"
 )
 
 type Handler struct {
