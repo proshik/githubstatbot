@@ -1,19 +1,19 @@
 package main
 
 import (
+	"crypto/tls"
+	"flag"
+	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/proshik/githubstatbot/api"
 	"github.com/proshik/githubstatbot/github"
 	"github.com/proshik/githubstatbot/storage"
 	"github.com/proshik/githubstatbot/telegram"
+	"golang.org/x/crypto/acme/autocert"
 	"log"
 	"net/http"
 	"os"
-	"flag"
-	"fmt"
 	"time"
-	"golang.org/x/crypto/acme/autocert"
-	"crypto/tls"
 )
 
 //For run:
