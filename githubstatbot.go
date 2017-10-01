@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"io"
 )
 
 //For run:
@@ -27,6 +28,9 @@ func main() {
 	}
 
 	tlsDir := os.Getenv("TLS_DIR")
+
+	logFile := os.Getenv("LOG_FILE")
+	configureLog(logFile)
 
 	path := os.Getenv("DB_PATH")
 	if path == "" {
@@ -64,6 +68,23 @@ func main() {
 	//Run HTTP server
 	fmt.Printf("Starting HTTP server on port %s\n", port)
 	http.ListenAndServe(":"+port, http.HandlerFunc(redirectToHttps))
+}
+
+func configureLog(logFileAddr string) {
+	var path string
+	if logFileAddr != "" {
+		path = logFileAddr
+	} else {
+		path = "log.txt"
+	}
+
+	logFile, err := os.OpenFile(path, os.O_CREATE | os.O_APPEND | os.O_RDWR, 0666)
+	if err != nil {
+		panic(err)
+	}
+
+	mw := io.MultiWriter(os.Stdout, logFile)
+	log.SetOutput(mw)
 }
 
 func redirectToHttps(w http.ResponseWriter, r *http.Request) {
