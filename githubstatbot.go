@@ -9,15 +9,24 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"flag"
+	"fmt"
+	"time"
+	"golang.org/x/crypto/acme/autocert"
+	"crypto/tls"
 )
 
 //For run:
 //env PORT=8080 DB_PATH=/data/githubstatbot/boltdb.db GITHUB_CLIENT_ID= GITHUB_CLIENT_SECRET= TELEGRAM_TOKEN= go run githubstatbot.go
 func main() {
+	flag.Parse()
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Panic("Port is empty")
 	}
+
+	tlsDir := os.Getenv("TLS_DIR")
 
 	path := os.Getenv("DB_PATH")
 	if path == "" {
@@ -51,10 +60,45 @@ func main() {
 	router.GET("/version", handler.Version)
 	router.GET("/github_redirect", handler.GitHubRedirect)
 
-	log.Println("Service is waiting for requests...")
+	//log.Println("Service is waiting for requests...")
+	// Запуск HTTPS сервера в отдельной go-рутине
+	startHttpsServer(router, tlsDir)
+	// Запуск HTTP сервера и редирект всех входящих запросов на HTTPS
+	fmt.Printf("Starting HTTP server on port %s\n", port)
+	http.ListenAndServe(":"+port, http.HandlerFunc(redirectToHttps))
+}
 
-	err = http.ListenAndServe(":"+port, router)
-	if err != nil {
-		log.Fatal(err)
+func redirectToHttps(w http.ResponseWriter, r *http.Request) {
+	newURI := "https://" + r.Host + r.URL.String()
+	http.Redirect(w, r, newURI, http.StatusFound)
+}
+
+func startHttpsServer(h http.Handler, tlsDir string) {
+	if tlsDir == "" {
+		log.Printf("-tlsAddr is empty, so skip serving https")
+		return
 	}
+
+	httpsServer := &http.Server{
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 5 * time.Second,
+		IdleTimeout:  120 * time.Second,
+		Handler:      h,
+	}
+
+	m := autocert.Manager{
+		Prompt: autocert.AcceptTOS,
+		Cache:  autocert.DirCache(tlsDir),
+	}
+
+	httpsServer.Addr = ":443"
+	httpsServer.TLSConfig = &tls.Config{GetCertificate: m.GetCertificate}
+
+	go func() {
+		fmt.Printf("Starting HTTPS server on %s\n", httpsServer.Addr)
+		err := httpsServer.ListenAndServeTLS("", "")
+		if err != nil {
+			log.Fatalf("httpsSrv.ListendAndServeTLS() failed with %s", err)
+		}
+	}()
 }
