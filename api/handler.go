@@ -26,10 +26,6 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request, p httprouter.Par
 	io.WriteString(w, "<html><body>Welcome!</body></html>")
 }
 
-func (h *Handler) Version(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	io.WriteString(w, "<html><body>Is new version!</body></html>")
-}
-
 func (h *Handler) GitHubRedirect(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	code := r.URL.Query().Get("code")
 	if code == "" {

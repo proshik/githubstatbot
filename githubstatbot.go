@@ -57,13 +57,11 @@ func main() {
 	handler := api.New(oAuth, db, stateStore, bot)
 	router := httprouter.New()
 	router.GET("/", handler.Index)
-	router.GET("/version", handler.Version)
 	router.GET("/github_redirect", handler.GitHubRedirect)
 
-	//log.Println("Service is waiting for requests...")
-	// Запуск HTTPS сервера в отдельной go-рутине
+	//Run HTTPS server
 	startHttpsServer(router, tlsDir)
-	// Запуск HTTP сервера и редирект всех входящих запросов на HTTPS
+	//Run HTTP server
 	fmt.Printf("Starting HTTP server on port %s\n", port)
 	http.ListenAndServe(":"+port, http.HandlerFunc(redirectToHttps))
 }
@@ -75,7 +73,7 @@ func redirectToHttps(w http.ResponseWriter, r *http.Request) {
 
 func startHttpsServer(h http.Handler, tlsDir string) {
 	if tlsDir == "" {
-		log.Printf("-tlsAddr is empty, so skip serving https")
+		log.Printf("TLS_DIR is empty, so skip serving https")
 		return
 	}
 
