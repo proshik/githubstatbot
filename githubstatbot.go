@@ -67,7 +67,7 @@ func main() {
 	startHttpsServer(router, tlsDir)
 	//Run HTTP server
 	fmt.Printf("Starting HTTP server on port %s\n", port)
-	http.ListenAndServe(":"+port, http.HandlerFunc(redirectToHttps))
+	http.ListenAndServe(":"+port, http.HandlerFunc(handler.RedirectToHttps))
 }
 
 func configureLog(logFileAddr string) {
@@ -78,18 +78,13 @@ func configureLog(logFileAddr string) {
 		path = "log.txt"
 	}
 
-	logFile, err := os.OpenFile(path, os.O_CREATE | os.O_APPEND | os.O_RDWR, 0666)
+	logFile, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {
 		panic(err)
 	}
 
 	mw := io.MultiWriter(os.Stdout, logFile)
 	log.SetOutput(mw)
-}
-
-func redirectToHttps(w http.ResponseWriter, r *http.Request) {
-	newURI := "https://" + r.Host + r.URL.String()
-	http.Redirect(w, r, newURI, http.StatusFound)
 }
 
 func startHttpsServer(h http.Handler, tlsDir string) {

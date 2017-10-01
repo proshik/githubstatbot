@@ -4,6 +4,12 @@ import (
 	"github.com/proshik/githubstatbot/github"
 	"github.com/proshik/githubstatbot/storage"
 	"github.com/proshik/githubstatbot/telegram"
+	"net/http"
+	"time"
+	"golang.org/x/crypto/acme/autocert"
+	"crypto/tls"
+	"fmt"
+	"log"
 )
 
 type Handler struct {
@@ -19,4 +25,9 @@ func New(
 	stateStore *storage.StateStore,
 	bot *telegram.Bot) Handler {
 	return Handler{OAuth, tokenStore, stateStore, bot}
+}
+
+func (h *Handler) RedirectToHttps(w http.ResponseWriter, r *http.Request) {
+	newURI := "https://" + r.Host + r.URL.String()
+	http.Redirect(w, r, newURI, http.StatusFound)
 }
