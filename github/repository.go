@@ -21,6 +21,7 @@ func (github *Client) Repos(user string) ([]*Repo, error) {
 
 	result := make([]*Repo, 0)
 	for _, r := range repos {
+		//skip forked repositories
 		if *r.Fork {
 			continue
 		}

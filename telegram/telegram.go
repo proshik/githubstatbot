@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/proshik/githubstatbot/github"
+	gh "github.com/google/go-github/github"
 	"gopkg.in/telegram-bot-api.v4"
 	"log"
 	"math/rand"
@@ -116,6 +117,9 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	//buf.WriteString("*/stat* - статистика по репозиториям\n")
 	//buf.WriteString("*/stat <username>* - статистика по заданному пользователю\n")
 	buf.WriteString("*/language* - статистика используемых языков в репозиториях\n")
+	buf.WriteString("*/language <username>* - статистика используемых языков в репозиториях указанного пользователя\n")
+	buf.WriteString("*/star* - статистика пожалованных звездочек в репозиториях\n")
+	buf.WriteString("*/star <username>* - статистика пожалованных звездочек в репозиториях указанного пользователя\n")
 	buf.WriteString("*/cancel* - отмена авторизации\n")
 	//create message
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, buf.String())
@@ -154,14 +158,13 @@ func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	if err != nil || token == "" {
 		return errorMessage(update)
 	}
-
+	//client to github
 	client := github.NewClient(token)
-
-	userRepos, err := getUserRepos(client)
+	//get userRepos
+	userRepos, err := repos(client, update.Message.CommandArguments())
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, err.Error())
 	}
-
 	//concurrent receipt language info in repositories of an user
 	wg := sync.WaitGroup{}
 	languageChan := make(chan map[string]int)
@@ -208,16 +211,16 @@ func starCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	//client to github
 	client := github.NewClient(token)
 	//request username and his repos
-	userRepos, err := getUserRepos(client)
+	userRepos, err := repos(client, update.Message.CommandArguments())
 	if err != nil {
 		return tgbotapi.NewMessage(update.Message.Chat.ID, err.Error())
 	}
-
+	//struct for calc count star
 	type starCount struct {
 		sync.Mutex
 		count int
 	}
-
+	//variable for calc count stars
 	var star starCount
 	//concurrent receipt calcCount stars in repositories of an user
 	wg := sync.WaitGroup{}
@@ -236,13 +239,10 @@ func starCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 		}(&wg, repo)
 
 	}
-	//wait before not will be receipt language info
-	//go func() {
+	//wait before not calculate all stars by user repos
 	wg.Wait()
-	//close(languageChan)
-	//}()
 	//create text messages for user
-	text := fmt.Sprintf("В репозиториях пользователя *%s* нашлось целых *%d* звезд", userRepos.username, star.count)
+	text := fmt.Sprintf("В репозиториях пользователя *%s* нашлось столько *%d* звезд", userRepos.username, star.count)
 	message := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 	message.ParseMode = "markdown"
 	return message
@@ -262,11 +262,46 @@ func cancelCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	return tgbotapi.NewMessage(update.Message.Chat.ID, "GitHub аккаунт отключен!")
 }
 
-func getUserRepos(client *github.Client) (*userRepos, error) {
+func repos(client *github.Client, username string) (*userRepos, error) {
+	var userRepos *userRepos
+	var err error
+	if username == "" {
+		userRepos, err = reposAuthUser(client)
+	} else {
+		userRepos, err = reposSpecificUser(username, client)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return userRepos, nil
+}
+
+func reposAuthUser(client *github.Client) (*userRepos, error) {
 	//receipt info for user
 	username, err := client.User()
 	if err != nil {
 		return nil, &messageError{"Ошибка получения данных. Выполните повторную авторизацию"}
+	}
+	//receipt user repositories
+	repos, err := client.Repos(username)
+	if err != nil {
+		return nil, &messageError{"Не найдены репозитории пользователя"}
+	}
+
+	return &userRepos{username, repos}, nil
+}
+
+func reposSpecificUser(username string, client *github.Client) (*userRepos, error) {
+	//receipt info for user
+	username, err := client.SpecificUser(username)
+	if err != nil {
+		if ghErr, ok := err.(*gh.ErrorResponse); ok {
+			if ghErr.Response.StatusCode == 404 {
+				return nil, &messageError{"Пользовать с указанным ником не найден"}
+			}
+		} else {
+			return nil, &messageError{"Ошибка получения данных. Выполните повторную авторизацию"}
+		}
 	}
 	//receipt user repositories
 	repos, err := client.Repos(username)
