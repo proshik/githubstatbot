@@ -17,6 +17,7 @@ var (
 	startC    = make(chan tgbotapi.Update)
 	authC     = make(chan tgbotapi.Update)
 	languageC = make(chan tgbotapi.Update)
+	starC     = make(chan tgbotapi.Update)
 	cancelC   = make(chan tgbotapi.Update)
 	//-send message
 	messages = make(chan tgbotapi.Chattable)
@@ -24,10 +25,21 @@ var (
 	letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 )
 
-type Language struct {
+type language struct {
 	Title      string
 	Percentage float32
 }
+
+type userRepos struct {
+	username string
+	repos    []*github.Repo
+}
+
+type messageError struct {
+	message string
+}
+
+func (e *messageError) Error() string { return e.message }
 
 func (b *Bot) ReadUpdates() {
 	//create timeout value
@@ -48,6 +60,8 @@ func (b *Bot) ReadUpdates() {
 				messages <- authCommand(&u, b)
 			case u := <-languageC:
 				messages <- languageCommand(&u, b)
+			case u := <-starC:
+				messages <- starCommand(&u, b)
 			case u := <-cancelC:
 				messages <- cancelCommand(&u, b)
 			}
@@ -71,6 +85,8 @@ func (b *Bot) ReadUpdates() {
 				authC <- update
 			case "language":
 				languageC <- update
+			case "star":
+				starC <- update
 			case "cancel":
 				cancelC <- update
 			default:
@@ -132,39 +148,31 @@ func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	return msg
 }
 
-func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
+func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	//found token by chatId in store
 	token, err := bot.tokenStore.Get(update.Message.Chat.ID)
-	if err != nil {
+	if err != nil || token == "" {
 		return errorMessage(update)
 	}
-	if token == "" {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "Необходимо выполнить авторизацию. Команда /auth")
-	}
-	//create github client
+
 	client := github.NewClient(token)
 
-	//receipt info for user
-	username, err := client.User()
+	userRepos, err := getUserRepos(client)
 	if err != nil {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "Ошибка получения данных. Выполните повторную авторизацию")
+		return tgbotapi.NewMessage(update.Message.Chat.ID, err.Error())
 	}
-	//receipt user repositories
-	repos, err := client.Repos(username)
-	if err != nil {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, "Not found repos for username="+username)
-	}
+
 	//concurrent receipt language info in repositories of an user
 	wg := sync.WaitGroup{}
 	languageChan := make(chan map[string]int)
-	for _, repo := range repos {
+	for _, repo := range userRepos.repos {
 		wg.Add(1)
 		go func(wg *sync.WaitGroup, r *github.Repo) {
 			defer wg.Done()
 			//receipt language info
-			lang, err := client.Language(username, *r.Name)
+			lang, err := client.Language(userRepos.username, *r.Name)
 			if err != nil {
-				log.Printf("Error on request language for user=%s, repo=%s", username, *r.Name)
+				log.Printf("Error on request language for user=%s, repo=%s", userRepos.username, *r.Name)
 			}
 			languageChan <- lang
 		}(&wg, repo)
@@ -183,12 +191,61 @@ func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.MessageConfig {
 		}
 	}
 	//create text messages for user
-	percentages := calcPercentages(statistics)
-	text := createLangStatText(username, percentages)
+	percentages := calcLanguagePercentages(statistics)
+	text := createLangStatText(userRepos.username, percentages)
 	//create messages
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 	msg.ParseMode = "markdown"
 	return msg
+}
+
+func starCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
+	//found token by chatId in store
+	token, err := bot.tokenStore.Get(update.Message.Chat.ID)
+	if err != nil || token == "" {
+		return errorMessage(update)
+	}
+	//client to github
+	client := github.NewClient(token)
+	//request username and his repos
+	userRepos, err := getUserRepos(client)
+	if err != nil {
+		return tgbotapi.NewMessage(update.Message.Chat.ID, err.Error())
+	}
+
+	type starCount struct {
+		sync.Mutex
+		count int
+	}
+
+	var star starCount
+	//concurrent receipt calcCount stars in repositories of an user
+	wg := sync.WaitGroup{}
+	for _, repo := range userRepos.repos {
+		wg.Add(1)
+		go func(wg *sync.WaitGroup, r *github.Repo) {
+			defer wg.Done()
+			//receipt language info
+			r, err := client.Repo(userRepos.username, *r.Name)
+			if err != nil {
+				log.Printf("Error on request language for user=%s, repo=%s", userRepos.username, *r.Name)
+			}
+			star.Lock()
+			star.count += *r.StargazersCount
+			star.Unlock()
+		}(&wg, repo)
+
+	}
+	//wait before not will be receipt language info
+	//go func() {
+	wg.Wait()
+	//close(languageChan)
+	//}()
+	//create text messages for user
+	text := fmt.Sprintf("В репозиториях пользователя *%s* нашлось целых *%d* звезд", userRepos.username, star.count)
+	message := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+	message.ParseMode = "markdown"
+	return message
 }
 
 func cancelCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
@@ -205,8 +262,23 @@ func cancelCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	return tgbotapi.NewMessage(update.Message.Chat.ID, "GitHub аккаунт отключен!")
 }
 
-func calcPercentages(languages map[string]int) []*Language {
-	result := make([]*Language, 0)
+func getUserRepos(client *github.Client) (*userRepos, error) {
+	//receipt info for user
+	username, err := client.User()
+	if err != nil {
+		return nil, &messageError{"Ошибка получения данных. Выполните повторную авторизацию"}
+	}
+	//receipt user repositories
+	repos, err := client.Repos(username)
+	if err != nil {
+		return nil, &messageError{"Не найдены репозитории пользователя"}
+	}
+
+	return &userRepos{username, repos}, nil
+}
+
+func calcLanguagePercentages(languages map[string]int) []*language {
+	result := make([]*language, 0)
 	//calculate total sum byte by all languages
 	var totalSum float32
 	for _, v := range languages {
@@ -218,7 +290,7 @@ func calcPercentages(languages map[string]int) []*Language {
 		repoPercent := float32(value) * (float32(100) / totalSum)
 		roundRepoPercent := round(repoPercent, 0.1)
 		if roundRepoPercent >= 0.1 {
-			result = append(result, &Language{key, roundRepoPercent})
+			result = append(result, &language{key, roundRepoPercent})
 		} else {
 			totalByteOtherLanguages += value
 		}
@@ -228,16 +300,18 @@ func calcPercentages(languages map[string]int) []*Language {
 	//calculate percentage for language with less then 0.1% from total count
 	if totalByteOtherLanguages != 0 {
 		percent := round(float32(totalByteOtherLanguages)*(float32(100)/totalSum), 0.1)
-		result = append(result, &Language{"Other languages", percent})
+		if percent != 0.0 {
+			result = append(result, &language{"Other languages", percent})
+		}
 	}
 	return result
 }
 
-func errorMessage(update *tgbotapi.Update) tgbotapi.MessageConfig {
+func errorMessage(update *tgbotapi.Update) tgbotapi.Chattable {
 	return tgbotapi.NewMessage(update.Message.Chat.ID, "Необходимо выполнить авторизацию. Команда /auth")
 }
 
-func createLangStatText(username string, statistics []*Language) string {
+func createLangStatText(username string, statistics []*language) string {
 	buf := bytes.NewBufferString("")
 	buf.WriteString(fmt.Sprintf("Username: *%s*\n", username))
 	buf.WriteString("\n")

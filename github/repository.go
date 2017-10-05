@@ -5,7 +5,10 @@ import (
 )
 
 type Repo struct {
-	Name *string `json:"name,omitempty"`
+	Name            *string `json:"name"`
+	Language        *string `json:"language"`
+	StargazersCount *int    `json:"stargazers_count"`
+	ForksCount      *int    `json:"forks_count"`
 }
 
 func (github *Client) Repos(user string) ([]*Repo, error) {
@@ -21,7 +24,7 @@ func (github *Client) Repos(user string) ([]*Repo, error) {
 		if *r.Fork {
 			continue
 		}
-		result = append(result, &Repo{r.Name})
+		result = append(result, &Repo{r.Name, r.Language, r.StargazersCount, r.ForksCount})
 	}
 
 	return result, nil
@@ -30,10 +33,10 @@ func (github *Client) Repos(user string) ([]*Repo, error) {
 func (github *Client) Repo(user string, repoName string) (*Repo, error) {
 	ctx := context.Background()
 
-	repo, _, err := github.client.Repositories.Get(ctx, user, repoName)
+	r, _, err := github.client.Repositories.Get(ctx, user, repoName)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Repo{repo.Name}, nil
+	return &Repo{r.Name, r.Language, r.StargazersCount, r.ForksCount}, nil
 }
