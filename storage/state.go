@@ -13,15 +13,15 @@ func NewStateStore() *StateStore {
 }
 
 type StateStore struct {
-	sync.Mutex
+	sync.RWMutex
 	store map[string]int64
 }
 
 func (s *StateStore) Get(state string) (int64, error) {
 	var chatId int64
-	s.Lock()
+	s.RLock()
 	chatId = s.store[state]
-	s.Unlock()
+	s.RUnlock()
 
 	if chatId == 0 {
 		return 0, errors.New(fmt.Sprintf("ChatId not found by state=%s\n", state))
