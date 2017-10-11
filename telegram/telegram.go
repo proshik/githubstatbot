@@ -3,13 +3,18 @@ package telegram
 import (
 	"bytes"
 	"fmt"
-	"github.com/proshik/githubstatbot/github"
 	gh "github.com/google/go-github/github"
+	"github.com/proshik/githubstatbot/github"
 	"gopkg.in/telegram-bot-api.v4"
 	"log"
 	"math/rand"
 	"sort"
 	"sync"
+)
+
+const (
+	starCountTextFormat = "В репозиториях пользователя *%s* нашлось столько *%d* звезд"
+	forkCountTextFormat = "Репозитории пользователя *%s* форкнули столько *%d* раз"
 )
 
 var (
@@ -19,6 +24,7 @@ var (
 	authC     = make(chan tgbotapi.Update)
 	languageC = make(chan tgbotapi.Update)
 	starC     = make(chan tgbotapi.Update)
+	forkC     = make(chan tgbotapi.Update)
 	cancelC   = make(chan tgbotapi.Update)
 	//-send message
 	messages = make(chan tgbotapi.Chattable)
@@ -62,7 +68,9 @@ func (b *Bot) ReadUpdates() {
 			case u := <-languageC:
 				messages <- languageCommand(&u, b)
 			case u := <-starC:
-				messages <- starCommand(&u, b)
+				messages <- calcCountCommand(&u, b, stargazersCountValue, starCountTextFormat)
+			case u := <-forkC:
+				messages <- calcCountCommand(&u, b, forkCountValue, forkCountTextFormat)
 			case u := <-cancelC:
 				messages <- cancelCommand(&u, b)
 			}
@@ -88,6 +96,8 @@ func (b *Bot) ReadUpdates() {
 				languageC <- update
 			case "star":
 				starC <- update
+			case "fork":
+				forkC <- update
 			case "cancel":
 				cancelC <- update
 			default:
@@ -120,6 +130,8 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	buf.WriteString("*/language <username>* - статистика используемых языков в репозиториях указанного пользователя\n")
 	buf.WriteString("*/star* - статистика пожалованных звездочек в репозиториях\n")
 	buf.WriteString("*/star <username>* - статистика пожалованных звездочек в репозиториях указанного пользователя\n")
+	buf.WriteString("*/fork* - статистика форков пользовательских репозиториев\n")
+	buf.WriteString("*/fork <username>* - статистика форков репозиториев указанного пользователя\n")
 	buf.WriteString("*/cancel* - отмена авторизации\n")
 	//create message
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, buf.String())
@@ -202,27 +214,27 @@ func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	return msg
 }
 
-func starCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
+func calcCountCommand(u *tgbotapi.Update, b *Bot, count func(r *github.Repo) *int, textFormat string) tgbotapi.Chattable {
 	//found token by chatId in store
-	token, err := bot.tokenStore.Get(update.Message.Chat.ID)
+	token, err := b.tokenStore.Get(u.Message.Chat.ID)
 	if err != nil || token == "" {
-		return errorMessage(update)
+		return errorMessage(u)
 	}
 	//client to github
 	client := github.NewClient(token)
 	//request username and his repos
-	userRepos, err := repos(client, update.Message.CommandArguments())
+	userRepos, err := repos(client, u.Message.CommandArguments())
 	if err != nil {
-		return tgbotapi.NewMessage(update.Message.Chat.ID, err.Error())
+		return tgbotapi.NewMessage(u.Message.Chat.ID, err.Error())
 	}
-	//struct for calc count star
-	type starCount struct {
+	//struct for calc count totalCount
+	type countLock struct {
 		sync.Mutex
 		count int
 	}
-	//variable for calc count stars
-	var star starCount
-	//concurrent receipt calcCount stars in repositories of an user
+	//variable for calc count values
+	var totalCount countLock
+	//concurrent receipt calcCount values in repositories of an user
 	wg := sync.WaitGroup{}
 	for _, repo := range userRepos.repos {
 		wg.Add(1)
@@ -231,21 +243,31 @@ func starCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 			//receipt language info
 			r, err := client.Repo(userRepos.username, *r.Name)
 			if err != nil {
-				log.Printf("Error on request language for user=%s, repo=%s", userRepos.username, *r.Name)
+				log.Printf("Error on request count for user=%s, repo=%s", userRepos.username, *r.Name)
 			}
-			star.Lock()
-			star.count += *r.StargazersCount
-			star.Unlock()
+			totalCount.Lock()
+			c := count(r)
+			fmt.Printf("repo: %s, count: %d\n", *r.Name, *c)
+			totalCount.count += *c
+			totalCount.Unlock()
 		}(&wg, repo)
 
 	}
-	//wait before not calculate all stars by user repos
+	//wait before not calculate all count values by user repos
 	wg.Wait()
 	//create text messages for user
-	text := fmt.Sprintf("В репозиториях пользователя *%s* нашлось столько *%d* звезд", userRepos.username, star.count)
-	message := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+	text := fmt.Sprintf(textFormat, userRepos.username, totalCount.count)
+	message := tgbotapi.NewMessage(u.Message.Chat.ID, text)
 	message.ParseMode = "markdown"
 	return message
+}
+
+func stargazersCountValue(r *github.Repo) *int {
+	return r.StargazersCount
+}
+
+func forkCountValue(r *github.Repo) *int {
+	return r.ForksCount
 }
 
 func cancelCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {

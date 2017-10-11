@@ -13,7 +13,7 @@ func (github *Client) User() (string, error) {
 	return *user.Login, nil
 }
 
-func (github *Client) SpecificUser(username string) (string, error){
+func (github *Client) SpecificUser(username string) (string, error) {
 	ctx := context.Background()
 
 	user, _, err := github.client.Users.Get(ctx, username)
