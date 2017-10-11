@@ -14,7 +14,7 @@ import (
 
 const (
 	starCountTextFormat = "В репозиториях пользователя *%s* нашлось столько *%d* звезд"
-	forkCountTextFormat = "Репозитории пользователя *%s* форкнули столько *%d* раз"
+	forkCountTextFormat = "Репозитории пользователя *%s* форкнули целых *%d* раз"
 )
 
 var (
@@ -246,9 +246,7 @@ func calcCountCommand(u *tgbotapi.Update, b *Bot, count func(r *github.Repo) *in
 				log.Printf("Error on request count for user=%s, repo=%s", userRepos.username, *r.Name)
 			}
 			totalCount.Lock()
-			c := count(r)
-			fmt.Printf("repo: %s, count: %d\n", *r.Name, *c)
-			totalCount.count += *c
+			totalCount.count += *count(r)
 			totalCount.Unlock()
 		}(&wg, repo)
 
