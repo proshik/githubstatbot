@@ -2,6 +2,7 @@ package github
 
 import (
 	"context"
+	gh "github.com/google/go-github/github"
 )
 
 type Repo struct {
@@ -13,8 +14,9 @@ type Repo struct {
 
 func (github *Client) Repos(user string) ([]*Repo, error) {
 	ctx := context.Background()
+	opt := gh.RepositoryListOptions{Sort: "updated", ListOptions: gh.ListOptions{PerPage: 100}}
 
-	repos, _, err := github.client.Repositories.List(ctx, user, nil)
+	repos, _, err := github.client.Repositories.List(ctx, user, &opt)
 	if err != nil {
 		return nil, err
 	}
