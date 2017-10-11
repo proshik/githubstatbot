@@ -10,10 +10,6 @@ Telegram bot written in GO. This bot show GitHub statistic by languages, stars, 
 ## Commands
 /auth* - авторизация
 
-/stat - статистика пользователя
-
-/account <username> - статистика по заданному пользователю
-
 /language - статистика языков в репозиториях авторизованного пользователя
 
 /language <repo_name> - статистика языков заданного репозитория авторизованного пользователя
