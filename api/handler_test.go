@@ -34,12 +34,14 @@ var (
 	tokenStoreMock = &TokenStoreMock{}
 	stateStoreMock = storage.NewStateStore()
 	bot, _         = telegram.NewBot("telegramToken", false, tokenStoreMock, stateStoreMock, oAuthMock)
+	basicAuth      = &BasicAuth{"username", "password"}
 
 	h = New(
 		oAuthMock,
 		tokenStoreMock,
 		stateStoreMock,
 		bot,
+		basicAuth,
 	)
 )
 
@@ -61,7 +63,7 @@ func TestIndex(t *testing.T) {
 	}
 	defer res.Body.Close()
 
-	expectedText := "<html><body>Welcome!</body></html>"
+	expectedText := "<html><body>Welcome to GitHubStat Bot!</body></html>"
 	actualText := string(greeting)
 	if expectedText != string(greeting) {
 		t.Fatalf(
