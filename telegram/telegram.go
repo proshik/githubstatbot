@@ -3,13 +3,16 @@ package telegram
 import (
 	"bytes"
 	"fmt"
-	gh "github.com/google/go-github/github"
-	"github.com/proshik/githubstatbot/github"
-	"gopkg.in/telegram-bot-api.v4"
 	"log"
 	"math/rand"
 	"sort"
 	"sync"
+
+	"strconv"
+
+	gh "github.com/google/go-github/github"
+	"github.com/proshik/githubstatbot/github"
+	"gopkg.in/telegram-bot-api.v4"
 )
 
 const (

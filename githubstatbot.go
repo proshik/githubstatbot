@@ -4,17 +4,18 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/julienschmidt/httprouter"
 	"github.com/proshik/githubstatbot/api"
 	"github.com/proshik/githubstatbot/github"
 	"github.com/proshik/githubstatbot/storage"
 	"github.com/proshik/githubstatbot/telegram"
 	"golang.org/x/crypto/acme/autocert"
-	"io"
-	"log"
-	"net/http"
-	"os"
-	"time"
 )
 
 //For run:

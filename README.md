@@ -22,8 +22,6 @@ Telegram bot written in GO. This bot show GitHub statistic by languages, stars, 
 
 /fork <repo_name> - статистика по форкам заданного репозитория авторизованного пользователя
 
-/commit <day, week, montrh, quarter, year> - статистика по коммитам авторизованного пользователя
-
 /cancel - отмена авторизации
   
 ## Quick run
