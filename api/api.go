@@ -12,14 +12,22 @@ type Handler struct {
 	tokenStore storage.AccessTokenStorage
 	stateStore *storage.StateStore
 	bot        *telegram.Bot
+	basicAuth  *BasicAuth
+}
+
+type BasicAuth struct {
+	Username string
+	Password string
 }
 
 func New(
 	OAuth *github.OAuth,
 	tokenStore storage.AccessTokenStorage,
 	stateStore *storage.StateStore,
-	bot *telegram.Bot) Handler {
-	return Handler{OAuth, tokenStore, stateStore, bot}
+	bot *telegram.Bot,
+	basicAuth *BasicAuth) Handler {
+
+	return Handler{OAuth, tokenStore, stateStore, bot, basicAuth}
 }
 
 func (h *Handler) RedirectToHttps(w http.ResponseWriter, r *http.Request) {

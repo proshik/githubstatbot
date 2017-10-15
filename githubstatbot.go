@@ -49,6 +49,12 @@ func main() {
 		log.Panic("Telegram token is empty")
 	}
 
+	username := os.Getenv("BA_USERNAME")
+	password := os.Getenv("BA_PASSWORD")
+	if username == "" || password == "" {
+		log.Panic("Credential for basic auth is incorrect")
+	}
+
 	db := storage.New(path)
 	stateStore := storage.NewStateStore()
 	oAuth := github.NewOAuth(clientID, clientSecret)
@@ -59,9 +65,12 @@ func main() {
 	}
 	go bot.ReadUpdates()
 
-	handler := api.New(oAuth, db, stateStore, bot)
+	basicAuth := &api.BasicAuth{Username: username, Password: password}
+
+	handler := api.New(oAuth, db, stateStore, bot, basicAuth)
 	router := httprouter.New()
 	router.GET("/", handler.Index)
+	router.GET("/version", handler.Version)
 	router.GET("/github_redirect", handler.GitHubRedirect)
 
 	//Run HTTPS server

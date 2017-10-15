@@ -2,12 +2,14 @@ package api
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"github.com/julienschmidt/httprouter"
 	"github.com/proshik/githubstatbot/telegram"
 	"io"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type AccessTokenReq struct {
@@ -23,7 +25,37 @@ type AccessTokenResp struct {
 }
 
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	io.WriteString(w, "<html><body>Welcome!</body></html>")
+	io.WriteString(w, "<html><body>Welcome to GitHubStat Bot!</body></html>")
+}
+
+func (h *Handler) Version(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	if checkAuth(w, r, h.basicAuth) {
+		io.WriteString(w, "<html><body>Version: 0.4.0</body></html>")
+		return
+	}
+
+	w.Header().Set("WWW-Authenticate", `Basic realm="MY REALM"`)
+	w.WriteHeader(401)
+	w.Write([]byte("401 Unauthorized\n"))
+}
+
+func checkAuth(w http.ResponseWriter, r *http.Request, ba *BasicAuth) bool {
+	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+	if len(s) != 2 {
+		return false
+	}
+
+	b, err := base64.StdEncoding.DecodeString(s[1])
+	if err != nil {
+		return false
+	}
+
+	pair := strings.SplitN(string(b), ":", 2)
+	if len(pair) != 2 {
+		return false
+	}
+
+	return pair[0] == ba.Username && pair[1] == ba.Password
 }
 
 func (h *Handler) GitHubRedirect(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

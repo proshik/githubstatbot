@@ -3,16 +3,13 @@ package telegram
 import (
 	"bytes"
 	"fmt"
+	gh "github.com/google/go-github/github"
+	"github.com/proshik/githubstatbot/github"
+	"gopkg.in/telegram-bot-api.v4"
 	"log"
 	"math/rand"
 	"sort"
 	"sync"
-
-	"strconv"
-
-	gh "github.com/google/go-github/github"
-	"github.com/proshik/githubstatbot/github"
-	"gopkg.in/telegram-bot-api.v4"
 )
 
 const (
@@ -126,16 +123,16 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	//descriptions of commands
 	buf.WriteString("\n")
 	buf.WriteString("Вы можете управлять мной, отправляя следующие команды:\n\n")
-	buf.WriteString("*/auth* - авторизация через OAuth\n")
+	buf.WriteString("[/auth]() - авторизация через OAuth\n")
 	//buf.WriteString("*/stat* - статистика по репозиториям\n")
 	//buf.WriteString("*/stat <username>* - статистика по заданному пользователю\n")
-	buf.WriteString("*/language* - статистика используемых языков в репозиториях\n")
-	buf.WriteString("*/language <username>* - статистика используемых языков в репозиториях указанного пользователя\n")
-	buf.WriteString("*/star* - статистика пожалованных звездочек в репозиториях\n")
-	buf.WriteString("*/star <username>* - статистика пожалованных звездочек в репозиториях указанного пользователя\n")
-	buf.WriteString("*/fork* - статистика форков пользовательских репозиториев\n")
-	buf.WriteString("*/fork <username>* - статистика форков репозиториев указанного пользователя\n")
-	buf.WriteString("*/cancel* - отмена авторизации\n")
+	buf.WriteString("[/language]() - статистика используемых языков в репозиториях\n")
+	buf.WriteString("[/language]() <username> - статистика используемых языков в репозиториях указанного пользователя\n")
+	buf.WriteString("[/star]() - статистика пожалованных звездочек в репозиториях\n")
+	buf.WriteString("[/star]() <username> - статистика пожалованных звездочек в репозиториях указанного пользователя\n")
+	buf.WriteString("[/fork]() - статистика форков пользовательских репозиториев\n")
+	buf.WriteString("[/fork]() <username> - статистика форков репозиториев указанного пользователя\n")
+	buf.WriteString("[/cancel]() - отмена авторизации\n")
 	//create message
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, buf.String())
 	msg.ParseMode = "markdown"
