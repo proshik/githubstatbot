@@ -8,7 +8,7 @@
 Telegram bot written in GO. This bot show GitHub statistic by languages, stars and forks.
 
 ## Demo
-[GitHubStat](https://t.me/githubstatbot)
+[Link](https://t.me/githubstatbot)
 
 ## Commands
 
