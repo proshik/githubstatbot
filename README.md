@@ -8,7 +8,7 @@
 Telegram bot written in GO. This bot show GitHub statistic by languages, stars, forks and commits.
 
 ## Commands
-/auth* - авторизация
+[/auth]() - авторизация
 
 /language - статистика языков в репозиториях авторизованного пользователя
 
