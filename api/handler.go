@@ -25,7 +25,7 @@ type AccessTokenResp struct {
 }
 
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	io.WriteString(w, "<html><body>Welcome to GitHubStat Bot!</body></html>")
+	http.ServeFile(w, r, h.staticPath+"/index.html")
 }
 
 func (h *Handler) Version(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

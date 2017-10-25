@@ -55,6 +55,11 @@ func main() {
 		log.Panic("Credential for basic auth is incorrect")
 	}
 
+	staticPath := os.Getenv("STATIC_PATH")
+	if staticPath == "" {
+		log.Panic("Path for static content is empty")
+	}
+
 	db := storage.New(path)
 	stateStore := storage.NewStateStore()
 	oAuth := github.NewOAuth(clientID, clientSecret)
@@ -67,7 +72,8 @@ func main() {
 
 	basicAuth := &api.BasicAuth{Username: username, Password: password}
 
-	handler := api.New(oAuth, db, stateStore, bot, basicAuth)
+	handler := api.New(oAuth, db, stateStore, bot, basicAuth, staticPath)
+
 	router := httprouter.New()
 	router.GET("/", handler.Index)
 	router.GET("/version", handler.Version)
@@ -78,6 +84,7 @@ func main() {
 	//Run HTTP server
 	fmt.Printf("Starting HTTP server on port %s\n", port)
 	http.ListenAndServe(":"+port, http.HandlerFunc(handler.RedirectToHttps))
+	//http.ListenAndServe(":"+port, router)
 }
 
 func configureLog(logFileAddr string) {

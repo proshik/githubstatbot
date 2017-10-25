@@ -13,6 +13,7 @@ type Handler struct {
 	stateStore *storage.StateStore
 	bot        *telegram.Bot
 	basicAuth  *BasicAuth
+	staticPath string
 }
 
 type BasicAuth struct {
@@ -25,9 +26,10 @@ func New(
 	tokenStore storage.AccessTokenStorage,
 	stateStore *storage.StateStore,
 	bot *telegram.Bot,
-	basicAuth *BasicAuth) Handler {
+	basicAuth *BasicAuth,
+	staticPath string) Handler {
 
-	return Handler{OAuth, tokenStore, stateStore, bot, basicAuth}
+	return Handler{OAuth, tokenStore, stateStore, bot, basicAuth, staticPath}
 }
 
 func (h *Handler) RedirectToHttps(w http.ResponseWriter, r *http.Request) {

@@ -35,19 +35,21 @@ var (
 	stateStoreMock = storage.NewStateStore()
 	bot, _         = telegram.NewBot("telegramToken", false, tokenStoreMock, stateStoreMock, oAuthMock)
 	basicAuth      = &BasicAuth{"username", "password"}
+	staticPath     = "static"
 
-	h = New(
+	handler = New(
 		oAuthMock,
 		tokenStoreMock,
 		stateStoreMock,
 		bot,
 		basicAuth,
+		staticPath,
 	)
 )
 
 func TestIndex(t *testing.T) {
 	router := httprouter.New()
-	router.GET("/", h.Index)
+	router.GET("/", handler.Index)
 
 	ts := httptest.NewServer(router)
 	defer ts.Close()
@@ -63,12 +65,8 @@ func TestIndex(t *testing.T) {
 	}
 	defer res.Body.Close()
 
-	expectedText := "<html><body>Welcome to GitHubStat Bot!</body></html>"
 	actualText := string(greeting)
-	if expectedText != string(greeting) {
-		t.Fatalf(
-			"Wrong text on Index page '%s', expected '%s'",
-			actualText, expectedText,
-		)
+	if len(string(greeting)) == 0 {
+		t.Fatalf("Wrong text on Index page '%s'", actualText)
 	}
 }
