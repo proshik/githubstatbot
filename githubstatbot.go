@@ -83,8 +83,8 @@ func main() {
 	startHttpsServer(router, tlsDir)
 	//Run HTTP server
 	fmt.Printf("Starting HTTP server on port %s\n", port)
-	http.ListenAndServe(":"+port, http.HandlerFunc(handler.RedirectToHttps))
-	//http.ListenAndServe(":"+port, router)
+	//http.ListenAndServe(":"+port, http.HandlerFunc(handler.RedirectToHttps))
+	http.ListenAndServe(":"+port, router)
 }
 
 func configureLog(logFileAddr string) {

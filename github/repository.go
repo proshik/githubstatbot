@@ -14,20 +14,28 @@ type Repo struct {
 
 func (github *Client) Repos(user string) ([]*Repo, error) {
 	ctx := context.Background()
-	opt := gh.RepositoryListOptions{Sort: "updated", ListOptions: gh.ListOptions{PerPage: 100}}
 
-	repos, _, err := github.client.Repositories.List(ctx, user, &opt)
-	if err != nil {
-		return nil, err
-	}
-
+	page := 1
 	result := make([]*Repo, 0)
-	for _, r := range repos {
-		//skip forked repositories
-		if *r.Fork {
-			continue
+	for {
+		opt := gh.RepositoryListOptions{Sort: "updated", ListOptions: gh.ListOptions{PerPage: 100, Page: page}}
+		list, resp, err := github.client.Repositories.List(ctx, user, &opt)
+		if err != nil {
+			return nil, err
 		}
-		result = append(result, &Repo{r.Name, r.Language, r.StargazersCount, r.ForksCount})
+		//fill result slice
+		for _, r := range list {
+			if *r.Fork {
+				continue
+			}
+			result = append(result, &Repo{r.Name, r.Language, r.StargazersCount, r.ForksCount})
+		}
+		//check on exist next page
+		if page <= resp.LastPage {
+			page++
+		} else {
+			break
+		}
 	}
 
 	return result, nil
