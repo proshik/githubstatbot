@@ -206,10 +206,15 @@ func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 		}
 	}
 	//create text messages for user
-	percentages := calcLanguagePercentages(statistics)
-	text := createLangStatText(userRepos.username, percentages)
-	//create messages
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+	var msg tgbotapi.MessageConfig
+	if len(statistics) != 0 {
+		percentages := calcLanguagePercentages(statistics)
+		text := createLangStatText(userRepos.username, percentages)
+		//create messages
+		msg = tgbotapi.NewMessage(update.Message.Chat.ID, text)
+	} else {
+		msg = tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf("У пользователя: *%s* нет репозиториев\n", userRepos.username))
+	}
 	msg.ParseMode = "markdown"
 	return msg
 }
