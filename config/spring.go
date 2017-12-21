@@ -1,11 +1,11 @@
 package config
 
 import (
-	"net/http"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
-	"encoding/json"
-	"encoding/base64"
+	"net/http"
 )
 
 type Payload struct {
