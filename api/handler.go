@@ -24,6 +24,8 @@ type AccessTokenResp struct {
 	Scope       string `json:"scope"`
 }
 
+var client = &http.Client{}
+
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	http.ServeFile(w, r, h.staticPath+"/index.html")
 }
@@ -91,7 +93,6 @@ func (h *Handler) GitHubRedirect(w http.ResponseWriter, r *http.Request, _ httpr
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Erorr on build request object. Error: %v\n", err)
