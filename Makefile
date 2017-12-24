@@ -2,7 +2,7 @@
 VERSION ?= 0.0.2
 
 APP=githubstatbot
-PROJECT=github.com/proshik/main
+PROJECT=github.com/proshik/githubstatbot
 
 RELEASE?=0.3
 GOOS?=linux
@@ -41,7 +41,7 @@ GO_LIST_FILES=$(shell go list ${PROJECT}/... | grep -v vendor)
 .PHONY: fmt
 fmt:
 	@echo "+ $@"
-	@go fmt -x ./...
+	@go list -f '{{if len .TestGoFiles}}"gofmt -s -l {{.Dir}}"{{end}}' ${GO_LIST_FILES} | xargs -L 1 sh -c
 
 .PHONY: lint
 lint: bootstrap
