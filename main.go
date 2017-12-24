@@ -2,65 +2,58 @@ package main
 
 import (
 	"crypto/tls"
-	"flag"
 	"fmt"
-	"io"
-	"log"
-	"net/http"
-	"os"
-	"time"
-
 	"github.com/julienschmidt/httprouter"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/pkg/errors"
 	"github.com/proshik/githubstatbot/api"
+	"github.com/proshik/githubstatbot/config"
 	"github.com/proshik/githubstatbot/github"
 	"github.com/proshik/githubstatbot/storage"
 	"github.com/proshik/githubstatbot/telegram"
 	"golang.org/x/crypto/acme/autocert"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"path"
+	"time"
 )
 
-//For run:
-//env PORT=8080 DB_PATH=/data/githubstatbot/boltdb.db GITHUB_CLIENT_ID= GITHUB_CLIENT_SECRET= TELEGRAM_TOKEN= go run githubstatbot.go
+type Specification struct {
+	Mode     string
+	Name     string
+	URI      string
+	Profile  string
+	Username string
+	Password string
+}
+
 func main() {
-	flag.Parse()
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		log.Panic("Port is empty")
+	var s Specification
+	err := envconfig.Process("githubstatbot", &s)
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 
-	tlsDir := os.Getenv("TLS_DIR")
-
-	logFile := os.Getenv("LOG_FILE")
-	configureLog(logFile)
-
-	path := os.Getenv("DB_PATH")
-	if path == "" {
-		log.Panic("DB path is empty")
+	springConfig := config.NewSpringConfig(s.Name, s.URI, s.Profile, s.Username, s.Password)
+	config, err := springConfig.Read()
+	if err != nil {
+		panic(err)
 	}
 
-	clientID := os.Getenv("GITHUB_CLIENT_ID")
-	clientSecret := os.Getenv("GITHUB_CLIENT_SECRET")
-	if clientID == "" || clientSecret == "" {
-		log.Panic("ClientId or clientSecret is empty")
-	}
+	port := config["port"]
+	tlsDir := config["tls-dir"]
+	configureLog(path.Join(config["log-dir"], "githubstatbot.log"))
+	dbPath := config["db-path"]
+	clientID := config["github.client-id"]
+	clientSecret := config["github.client-secret"]
+	telegramToken := config["telegram.token"]
+	username := config["authentificate.basic.username"]
+	password := config["authentificate.basic.password"]
+	staticPath := config["static-dir"]
 
-	telegramToken := os.Getenv("TELEGRAM_TOKEN")
-	if telegramToken == "" {
-		log.Panic("Telegram token is empty")
-	}
-
-	username := os.Getenv("BA_USERNAME")
-	password := os.Getenv("BA_PASSWORD")
-	if username == "" || password == "" {
-		log.Panic("Credential for basic auth is incorrect")
-	}
-
-	staticPath := os.Getenv("STATIC_PATH")
-	if staticPath == "" {
-		log.Panic("Path for static content is empty")
-	}
-
-	db := storage.New(path)
+	db := storage.New(dbPath)
 	stateStore := storage.NewStateStore()
 	oAuth := github.NewOAuth(clientID, clientSecret)
 
@@ -80,22 +73,22 @@ func main() {
 	router.GET("/github_redirect", handler.GitHubRedirect)
 
 	//Run HTTPS server
-	startHttpsServer(router, tlsDir)
-	//Run HTTP server
-	fmt.Printf("Starting HTTP server on port %s\n", port)
-	http.ListenAndServe(":"+port, http.HandlerFunc(handler.RedirectToHttps))
-	//http.ListenAndServe(":"+port, router)
+	if s.Mode == "local" {
+		http.ListenAndServe(":"+port, router)
+	} else {
+		startHttpsServer(router, tlsDir)
+		//Run HTTP server
+		fmt.Printf("Starting HTTP server on port %s\n", port)
+		http.ListenAndServe(":"+port, http.HandlerFunc(handler.RedirectToHttps))
+	}
 }
 
 func configureLog(logFileAddr string) {
-	var path string
-	if logFileAddr != "" {
-		path = logFileAddr
-	} else {
-		path = "log.txt"
+	if logFileAddr == "" {
+		panic(errors.New("Log file is empty"))
 	}
 
-	logFile, err := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	logFile, err := os.OpenFile(logFileAddr, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {
 		panic(err)
 	}
