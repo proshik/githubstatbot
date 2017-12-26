@@ -2,7 +2,7 @@
 VERSION ?= 0.0.2
 
 APP=githubstatbot
-PROJECT=github.com/proshik/main
+PROJECT=github.com/proshik/githubstatbot
 
 RELEASE?=0.3
 GOOS?=linux
