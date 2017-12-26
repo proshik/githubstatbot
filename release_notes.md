@@ -1,3 +1,8 @@
+## Version 0.5.0
+
+- read configuration from environment variable;
+- docker configuration.
+
 ## Version 0.4.4
 
 - change message on /language command if user repos equals 0.

@@ -32,6 +32,18 @@
   version = "v1.1"
 
 [[projects]]
+  name = "github.com/kelseyhightower/envconfig"
+  packages = ["."]
+  revision = "f611eb38b3875cc3bd991ca91c51d06446afa14c"
+  version = "v1.3.0"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
+
+[[projects]]
   name = "github.com/technoweenie/multipartstreamer"
   packages = ["."]
   revision = "a90a01d73ae432e2611d178c18367fbaa13e0154"
@@ -76,6 +88,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d904e6cbd8838d0fec617c624dc4f7344217a88980c2e45e7532a435ecf9dea8"
+  inputs-digest = "30cd43098cd6a8589f02acfdb4303ff8d5de9b1144c3d290a4f051b681440047"
   solver-name = "gps-cdcl"
   solver-version = 1
