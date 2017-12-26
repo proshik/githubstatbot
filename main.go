@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
-	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
 	"github.com/proshik/githubstatbot/api"
 	"github.com/proshik/githubstatbot/config"
@@ -16,56 +15,32 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
 	"time"
+	"flag"
 )
 
-type Specification struct {
-	Mode     string
-	Name     string
-	URI      string
-	Profile  string
-	Username string
-	Password string
-}
-
 func main() {
-	var s Specification
-	err := envconfig.Process("githubstatbot", &s)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
+	var mode string
+	flag.StringVar(&mode, "mode", "", "For running on local mode")
+	flag.Parse()
 
-	springConfig := config.NewSpringConfig(s.Name, s.URI, s.Profile, s.Username, s.Password)
-	config, err := springConfig.Read()
+	cfg, err := config.Load()
 	if err != nil {
 		panic(err)
 	}
-
-	port := config["port"]
-	tlsDir := config["tls-dir"]
-	configureLog(path.Join(config["log-dir"], "githubstatbot.log"))
-	dbPath := config["db-path"]
-	clientID := config["github.client-id"]
-	clientSecret := config["github.client-secret"]
-	telegramToken := config["telegram.token"]
-	username := config["authentificate.basic.username"]
-	password := config["authentificate.basic.password"]
-	staticPath := config["static-dir"]
-
-	db := storage.New(dbPath)
+	db := storage.New(cfg.DbPath)
 	stateStore := storage.NewStateStore()
-	oAuth := github.NewOAuth(clientID, clientSecret)
+	oAuth := github.NewOAuth(cfg.GitHubClientId, cfg.GitHubClientSecret)
 
-	bot, err := telegram.NewBot(telegramToken, false, db, stateStore, oAuth)
+	bot, err := telegram.NewBot(cfg.TelegramToken, false, db, stateStore, oAuth)
 	if err != nil {
 		log.Panic(err)
 	}
 	go bot.ReadUpdates()
 
-	basicAuth := &api.BasicAuth{Username: username, Password: password}
+	basicAuth := &api.BasicAuth{Username: cfg.AuthBasicUsername, Password: cfg.AuthBasicPassword}
 
-	handler := api.New(oAuth, db, stateStore, bot, basicAuth, staticPath)
+	handler := api.New(oAuth, db, stateStore, bot, basicAuth, cfg.StaticFilesDir)
 
 	router := httprouter.New()
 	router.GET("/", handler.Index)
@@ -73,13 +48,13 @@ func main() {
 	router.GET("/github_redirect", handler.GitHubRedirect)
 
 	//Run HTTPS server
-	if s.Mode == "local" {
-		http.ListenAndServe(":"+port, router)
+	if mode == "local" {
+		http.ListenAndServe(":"+cfg.Port, router)
 	} else {
-		startHttpsServer(router, tlsDir)
+		startHttpsServer(router, cfg.TlsDir)
 		//Run HTTP server
-		fmt.Printf("Starting HTTP server on port %s\n", port)
-		http.ListenAndServe(":"+port, http.HandlerFunc(handler.RedirectToHttps))
+		fmt.Printf("Starting HTTP server on port %s\n", cfg.Port)
+		http.ListenAndServe(":"+cfg.Port, http.HandlerFunc(handler.RedirectToHttps))
 	}
 }
 
