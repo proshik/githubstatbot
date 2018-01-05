@@ -16,11 +16,19 @@ Telegram bot which show GitHub statistic by languages, stars and forks. Written 
 1. You need talk with [BotFather](https://telegram.me/botfather) and follow a few simple steps for register your bot.
 2. Get access token for work with bot. You will have GITHUBSTATBOT_TELEGRAMTOKEN.
 3. Go to [GitHub OAuth App](https://github.com/settings/developers) and registration you application. You will have GITHUBSTATBOT_GITHUBCLIENTID and GITHUBSTATBOT_GITHUBCLIENTSECRET.
-4. Not you must export environment variables takes on previous steps:
+4. Not you must export environment required variables takes on previous steps:
  - GITHUBSTATBOT_TELEGRAMTOKEN
  - GITHUBSTATBOT_GITHUBCLIENTID
  - GITHUBSTATBOT_GITHUBCLIENTSECRET
-5. Run githubstatbot.
+5. And to serveral not required variable:
+ - GITHUBSTATBOT_MODE
+ - GITHUBSTATBOT_PORT
+ - GITHUBSTATBOT_TLSDIR
+ - GITHUBSTATBOT_STATICFILESDIR
+ - GITHUBSTATBOT_DBPATH
+ - GITHUBSTATBOT_AUTHBASICUSERNAME
+ - GITHUBSTATBOT_AUTHBASICPASSWORD
+6. Run githubstatbot.
 
 ### Run with go
 
@@ -29,11 +37,15 @@ $ go build
 $ GITHUBSTATBOT_TELEGRAMTOKEN=<telegram_token> GITHUBSTATBOT_GITHUBCLIENTID=<github_client_id> GITHUBSTATBOT_GITHUBCLIENTSECRET=<github_client_secret> ./githubstatbot
 ```
 
-### 5.2 Run with docker
+### Run with docker
 
 NOT forget insert environment variable in command.
 
-#### Linux, macOS
+#### Simple start
+
+Start bot only inline prompt command
+
+##### Linux, macOS
 
 ```bash
 docker build -t githubstatbot:latest .
@@ -43,13 +55,25 @@ docker run --rm -p 8080:8080 -e GITHUBSTATBOT_TELEGRAMTOKEN='' \
 --name githubstatbot githubstatbot:latest
 ```
 
-#### Windows
+##### Windows
 
 ```bash
 docker build -t githubstatbot:latest .
 docker run --rm -p 8080:8080 -e GITHUBSTATBOT_TELEGRAMTOKEN='' ^
 -e GITHUBSTATBOT_GITHUBCLIENTID='' ^
 -e GITHUBSTATBOT_GITHUBCLIENTSECRET='' ^
+--name githubstatbot githubstatbot:latest
+```
+
+#### Full start(production mode)
+
+```bash
+docker run --rm -p 8080:8080 -e GITHUBSTATBOT_TELEGRAMTOKEN='' \
+-e GITHUBSTATBOT_MODE='prod' \
+-e GITHUBSTATBOT_GITHUBCLIENTID='' \
+-e GITHUBSTATBOT_GITHUBCLIENTSECRET='' \
+-e GITHUBSTATBOT_DBPATH='/app/data/database.db' \
+--mount=type=bind,source="$(pwd)"/data,target=/app/data \
 --name githubstatbot githubstatbot:latest
 ```
 

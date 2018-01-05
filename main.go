@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/tls"
-	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/pkg/errors"
 	"github.com/proshik/githubstatbot/api"
@@ -16,18 +15,16 @@ import (
 	"net/http"
 	"os"
 	"time"
-	"flag"
 )
 
 func main() {
-	var mode string
-	flag.StringVar(&mode, "mode", "", "For running on local mode")
-	flag.Parse()
-
 	cfg, err := config.Load()
 	if err != nil {
 		panic(err)
 	}
+
+	//configureLog(cfg.LogDir)
+
 	db := storage.New(cfg.DbPath)
 	stateStore := storage.NewStateStore()
 	oAuth := github.NewOAuth(cfg.GitHubClientId, cfg.GitHubClientSecret)
@@ -48,12 +45,11 @@ func main() {
 	router.GET("/github_redirect", handler.GitHubRedirect)
 
 	//Run HTTPS server
-	if mode == "local" {
+	log.Printf("Starting HTTP server in mode %s on port %s\n", cfg.Mode, cfg.Port)
+	if cfg.Mode == "local" {
 		http.ListenAndServe(":"+cfg.Port, router)
 	} else {
 		startHttpsServer(router, cfg.TlsDir)
-		//Run HTTP server
-		fmt.Printf("Starting HTTP server on port %s\n", cfg.Port)
 		http.ListenAndServe(":"+cfg.Port, http.HandlerFunc(handler.RedirectToHttps))
 	}
 }
@@ -63,7 +59,18 @@ func configureLog(logFileAddr string) {
 		panic(errors.New("Log file is empty"))
 	}
 
-	logFile, err := os.OpenFile(logFileAddr, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	logFilePath := logFileAddr + "/githubstatbot.log"
+
+	if _, err := os.Stat(logFilePath); os.IsNotExist(err) {
+		file, err := os.Create(logFilePath)
+		if err != nil {
+			panic(err)
+		}
+		file.Chmod(0755)
+		file.Close()
+	}
+
+	logFile, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {
 		panic(err)
 	}
@@ -94,7 +101,7 @@ func startHttpsServer(h http.Handler, tlsDir string) {
 	httpsServer.TLSConfig = &tls.Config{GetCertificate: m.GetCertificate}
 
 	go func() {
-		fmt.Printf("Starting HTTPS server on %s\n", httpsServer.Addr)
+		log.Printf("Starting HTTPS server on %s\n", httpsServer.Addr)
 		err := httpsServer.ListenAndServeTLS("", "")
 		if err != nil {
 			log.Fatalf("httpsSrv.ListendAndServeTLS() failed with %s", err)

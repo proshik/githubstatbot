@@ -124,8 +124,6 @@ func startCommand(update *tgbotapi.Update) tgbotapi.MessageConfig {
 	buf.WriteString("\n")
 	buf.WriteString("Вы можете управлять мной, отправляя следующие команды:\n\n")
 	buf.WriteString("[/auth]() - авторизация через OAuth\n")
-	//buf.WriteString("*/stat* - статистика по репозиториям\n")
-	//buf.WriteString("*/stat <username>* - статистика по заданному пользователю\n")
 	buf.WriteString("[/language]() - статистика используемых языков в репозиториях\n")
 	buf.WriteString("[/language]() <username> - статистика используемых языков в репозиториях указанного пользователя\n")
 	buf.WriteString("[/star]() - статистика пожалованных звездочек в репозиториях\n")
@@ -161,6 +159,8 @@ func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	//build message with url for user
 	text := buf.String()
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
+
+	log.Printf("Was authentication user with id=%s", update.Message.Chat.ID)
 	return msg
 }
 
@@ -284,7 +284,12 @@ func cancelCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	}
 	//delete token by chatId. Exactly remove user from store
 	bot.tokenStore.Delete(update.Message.Chat.ID)
-	return tgbotapi.NewMessage(update.Message.Chat.ID, "GitHub аккаунт отключен!")
+
+	mess := tgbotapi.NewMessage(update.Message.Chat.ID, "GitHub аккаунт отключен!")
+
+	log.Printf("Was cancel authentication user with id=%s", update.Message.Chat.ID)
+
+	return mess
 }
 
 func repos(client *github.Client, username string) (*userRepos, error) {
