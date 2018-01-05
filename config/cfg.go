@@ -10,7 +10,8 @@ const (
 type Config struct {
 	Mode               string `default:"local"`
 	Port               string `default:"8080"`
-	TlsDir             string `default:"/"`
+	TlsDir             string `default:"./"`
+	LogDir             string `default:"./log/"`
 	StaticFilesDir     string `default:"/static"`
 	DbPath             string `default:"database.db"`
 	GitHubClientId     string `required:"true"`

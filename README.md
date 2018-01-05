@@ -23,6 +23,7 @@ Telegram bot which show GitHub statistic by languages, stars and forks. Written 
 5. And to serveral not required variable:
  - GITHUBSTATBOT_MODE
  - GITHUBSTATBOT_PORT
+ - GITHUBSTATBOT_LOGDIR
  - GITHUBSTATBOT_TLSDIR
  - GITHUBSTATBOT_STATICFILESDIR
  - GITHUBSTATBOT_DBPATH

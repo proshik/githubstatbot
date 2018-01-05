@@ -59,18 +59,7 @@ func configureLog(logFileAddr string) {
 		panic(errors.New("Log file is empty"))
 	}
 
-	logFilePath := logFileAddr + "/githubstatbot.log"
-
-	if _, err := os.Stat(logFilePath); os.IsNotExist(err) {
-		file, err := os.Create(logFilePath)
-		if err != nil {
-			panic(err)
-		}
-		file.Chmod(0755)
-		file.Close()
-	}
-
-	logFile, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	logFile, err := os.OpenFile(logFileAddr + "githubstatbot.log", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	if err != nil {
 		panic(err)
 	}

@@ -1,11 +1,11 @@
 .idea
 *.iml
+
 .DS_Store
 
 /vendor
-plan.txt
 /log
-my.db
+/data
+
 githubstatbot
 database.db
-/data
