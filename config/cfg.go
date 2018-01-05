@@ -12,7 +12,7 @@ type Config struct {
 	Port               string `default:"8080"`
 	TlsDir             string `default:"./"`
 	LogDir             string `default:"./log/"`
-	StaticFilesDir     string `default:"/static"`
+	StaticFilesDir     string `default:"./static"`
 	DbPath             string `default:"database.db"`
 	GitHubClientId     string `required:"true"`
 	GitHubClientSecret string `required:"true"`
