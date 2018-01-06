@@ -8,7 +8,7 @@ const (
 )
 
 type Config struct {
-	Mode               string `default:"local"`
+	Mode               string `default:"prod"`
 	Port               string `default:"8080"`
 	TlsDir             string `default:"./"`
 	LogDir             string `default:"./log/"`
