@@ -1,13 +1,13 @@
-dist: trusty
 sudo: required
+group: deprecated-2017Q2
+
+services:
+  - docker
 
 language: go
 
 go:
   - 1.9
-
-services:
-  - docker
 
 script: make cover
 
@@ -30,7 +30,7 @@ after_success:
   - export GITHUBSTATBOT=githubstatbot
 
   # docker
-  - docker login -u $DOCKER_USER --password-stdin $DOCKER_PASS
+  - docker login -u "$DOCKER_USER" -p "$DOCKER_PASS"
   - docker build -t $GITHUBSTATBOT:$COMMIT .
   - docker tag $GITHUBSTATBOT:$COMMIT $GITHUBSTATBOT:$TAG
   - docker push $GITHUBSTATBOT
