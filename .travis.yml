@@ -1,12 +1,14 @@
 sudo: required
-dist: trusty
 
 language: go
 
 go:
   - 1.9
 
-script: make test
+services:
+  - docker
+
+script: make cover
 
 after_success:
   - make cover
@@ -21,13 +23,13 @@ env:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - docker login -u $DOCKER_USER --password-stdin $DOCKER_PASS
 
-  # TAG
+  # export
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
-
-  # GATEWAY
   - export GITHUBSTATBOT=githubstatbot
+
+  # docker
+  - docker login -u $DOCKER_USER --password-stdin $DOCKER_PASS
   - docker build -t $GITHUBSTATBOT:$COMMIT .
   - docker tag $GITHUBSTATBOT:$COMMIT $GITHUBSTATBOT:$TAG
   - docker push $GITHUBSTATBOT

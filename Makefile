@@ -1,5 +1,7 @@
 VERSION := $(shell cat ./VERSION)
 
+GO_LIST_FILES=$(shell go list github.com/proshik/githubstatbot/... | grep -v vendor)
+
 all: build
 
 build: vendor
@@ -7,6 +9,10 @@ build: vendor
 
 test: vendor
 	go test -v ./...
+
+cover: test
+	@> coverage.txt
+	@go list -f '{{if len .TestGoFiles}}"go test -coverprofile={{.Dir}}/.coverprofile {{.ImportPath}} && cat {{.Dir}}/.coverprofile  >> coverage.txt"{{end}}' ${GO_LIST_FILES} | xargs -L 1 sh -c
 
 fmt:
 	go fmt -x ./...
@@ -18,7 +24,6 @@ release:
 vendor: bootstrap
 	dep ensure
 
-
 HAS_DEP := $(shell command -v dep;)
 HAS_LINT := $(shell command -v golint;)
 
@@ -27,4 +32,4 @@ ifndef HAS_DEP
 	go get -u github.com/golang/dep/cmd/dep
 endif
 
-.PHONY: build test fmt vendor release
+.PHONY: build test cover fmt vendor release
