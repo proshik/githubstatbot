@@ -22,7 +22,7 @@ env:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - docker login -u $DOCKER_USER --password-stdin $DOCKER_PASS
+  - docker login -u $DOCKER_USER -p $DOCKER_PASS
 
   # TAG
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
