@@ -160,7 +160,6 @@ func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	text := buf.String()
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 
-	log.Printf("Was authentication user with id=%d", update.Message.Chat.ID)
 	return msg
 }
 

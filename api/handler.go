@@ -110,10 +110,13 @@ func (h *Handler) GitHubRedirect(w http.ResponseWriter, r *http.Request, _ httpr
 	//save token in storage
 	err = h.tokenStore.Add(int64(chatId), bodyResp.AccessToken)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("Error on add GitHub user token in db, %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	//inform user in bot about success auth
 	h.bot.InformAuth(chatId, true)
 	//redirect user to bot page in telegram
-	//http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
+	log.Printf("Was authentication user with chatId=%d", int64(chatId))
+	http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
 }
