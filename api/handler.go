@@ -117,5 +117,5 @@ func (h *Handler) GitHubRedirect(w http.ResponseWriter, r *http.Request, _ httpr
 	h.bot.InformAuth(chatId, true)
 	//redirect user to bot page in telegram
 	log.Printf("Was authentication user with chatId=%d", int64(chatId))
-	//http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
+	http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
 }

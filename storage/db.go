@@ -14,7 +14,7 @@ type Store struct {
 }
 
 func New(path string) *Store {
-	db, err := bolt.Open(path, 0777, &bolt.Options{Timeout: 1 * time.Second})
+	db, err := bolt.Open(path, 0666, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		panic(err)
 	}
@@ -88,7 +88,7 @@ func (s *Store) Delete(chatId int64) error {
 }
 
 func open(s *Store) (*bolt.DB, error) {
-	db, err := bolt.Open(s.path, 0777, &bolt.Options{Timeout: 1 * time.Second})
+	db, err := bolt.Open(s.path, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		log.Printf("Error on open database\n")
 		return nil, err
