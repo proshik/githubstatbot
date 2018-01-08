@@ -4,7 +4,7 @@ GO_LIST_FILES=$(shell go list github.com/proshik/githubstatbot/... | grep -v ven
 
 all: build
 
-build: vendor
+build:
 	CGO_ENABLED=0 go build -v
 
 test: vendor
