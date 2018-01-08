@@ -54,18 +54,18 @@ func main() {
 	}
 }
 
-func configureLog(logFileAddr string) {
-	if logFileAddr == "" {
-		panic(errors.New("Log file is empty"))
-	}
+func configureLog(_ string) {
+	//if logFileAddr == "" {
+	//	panic(errors.New("Log file is empty"))
+	//}
 
 	//logFile, err := os.OpenFile(logFileAddr + "githubstatbot.log", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
 	//if err != nil {
 	//	panic(err)
 	//}
 
-	mw := io.MultiWriter(os.Stdout)
-	log.SetOutput(mw)
+	//mw := io.MultiWriter(os.Stdout)
+	log.SetOutput(os.Stdout)
 }
 
 func startHttpsServer(h http.Handler, tlsDir string) {
