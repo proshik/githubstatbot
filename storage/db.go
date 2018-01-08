@@ -14,7 +14,7 @@ type Store struct {
 }
 
 func New(path string) *Store {
-	db, err := bolt.Open(path, 0666, &bolt.Options{Timeout: 1 * time.Second})
+	db, err := bolt.Open(path, 0777, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		panic(err)
 	}
