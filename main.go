@@ -23,7 +23,7 @@ func main() {
 		panic(err)
 	}
 
-	//configureLog(cfg.LogDir)
+	configureLog(cfg.LogDir)
 
 	db := storage.New(cfg.DbPath)
 	stateStore := storage.NewStateStore()
@@ -59,12 +59,12 @@ func configureLog(logFileAddr string) {
 		panic(errors.New("Log file is empty"))
 	}
 
-	logFile, err := os.OpenFile(logFileAddr + "githubstatbot.log", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
-	if err != nil {
-		panic(err)
-	}
+	//logFile, err := os.OpenFile(logFileAddr + "githubstatbot.log", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+	//if err != nil {
+	//	panic(err)
+	//}
 
-	mw := io.MultiWriter(os.Stdout, logFile)
+	mw := io.MultiWriter(os.Stdout)
 	log.SetOutput(mw)
 }
 
