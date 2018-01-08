@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"fmt"
 )
 
 type AccessTokenReq struct {
@@ -107,9 +108,12 @@ func (h *Handler) GitHubRedirect(w http.ResponseWriter, r *http.Request, _ httpr
 	json.NewDecoder(resp.Body).Decode(&bodyResp)
 
 	//save token in storage
-	h.tokenStore.Add(int64(chatId), bodyResp.AccessToken)
+	err = h.tokenStore.Add(int64(chatId), bodyResp.AccessToken)
+	if err != nil {
+		fmt.Println(err)
+	}
 	//inform user in bot about success auth
 	h.bot.InformAuth(chatId, true)
 	//redirect user to bot page in telegram
-	http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
+	//http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
 }
