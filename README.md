@@ -5,37 +5,44 @@
 [![codecov](https://codecov.io/gh/proshik/jalmew/branch/master/graph/badge.svg)](https://codecov.io/gh/proshik/githubstatbot)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/proshik/githubstatbot/issues)
 
-Telegram bot which show GitHub statistic by languages, stars and forks. Written on GO.
-
-## Demo
-
-[Link](https://t.me/githubstatbot)
+[Telegram bot](https://t.me/githubstatbot) which show GitHub statistic by languages, stars and forks. Written on GO.
 
 ## Run
 
-1. You need talk with [BotFather](https://telegram.me/botfather) and follow a few simple steps for register your bot.
-2. Get access token for work with bot. You will have GITHUBSTATBOT_TELEGRAMTOKEN.
-3. Go to [GitHub OAuth App](https://github.com/settings/developers) and registration you application. You will have GITHUBSTATBOT_GITHUBCLIENTID and GITHUBSTATBOT_GITHUBCLIENTSECRET.
-4. Not you must export environment required variables takes on previous steps:
- - GITHUBSTATBOT_TELEGRAMTOKEN
- - GITHUBSTATBOT_GITHUBCLIENTID
- - GITHUBSTATBOT_GITHUBCLIENTSECRET
-5. And to serveral not required variable:
- - GITHUBSTATBOT_MODE
- - GITHUBSTATBOT_PORT
- - GITHUBSTATBOT_LOGDIR
- - GITHUBSTATBOT_TLSDIR
- - GITHUBSTATBOT_STATICFILESDIR
- - GITHUBSTATBOT_DBPATH
- - GITHUBSTATBOT_AUTHBASICUSERNAME
- - GITHUBSTATBOT_AUTHBASICPASSWORD
-6. Run githubstatbot.
+1. Download [githubstatbot](https://github.com/proshik/githubstatbot/releases)
+2. You need talk with [BotFather](https://telegram.me/botfather) and follow a few simple steps for register your bot and take access token(GITHUBSTATBOT_TELEGRAMTOKEN)
+3. Go to [GitHub OAuth App](https://github.com/settings/developers) and create new OAuth Apps. You will have `Client ID`(GITHUBSTATBOT_GITHUBCLIENTID) and `Client Secret`(GITHUBSTATBOT_GITHUBCLIENTSECRET)
+4. Export environment variables, taking on previous steps and start application:
+
+```bash
+# Required environment variables
+$ export GITHUBSTATBOT_TELEGRAMTOKEN=
+$ export GITHUBSTATBOT_GITHUBCLIENTID=
+$ export GITHUBSTATBOT_GITHUBCLIENTSECRET=
+
+# Not required environment variables
+# export GITHUBSTATBOT_MODE=
+# export GITHUBSTATBOT_PORT=
+# export GITHUBSTATBOT_LOGDIR=
+# export GITHUBSTATBOT_TLSDIR=
+# export GITHUBSTATBOT_STATICFILESDIR=
+# export GITHUBSTATBOT_DBPATH=
+# export GITHUBSTATBOT_AUTHBASICUSERNAME=
+# export GITHUBSTATBOT_AUTHBASICPASSWORD=
+
+$ ./githubstatbot
+```  
 
 ### Run with go
 
 ```bash
 $ go build
-$ GITHUBSTATBOT_TELEGRAMTOKEN=<telegram_token> GITHUBSTATBOT_GITHUBCLIENTID=<github_client_id> GITHUBSTATBOT_GITHUBCLIENTSECRET=<github_client_secret> ./githubstatbot
+
+$ export GITHUBSTATBOT_MODE=local 
+$ export GITHUBSTATBOT_TELEGRAMTOKEN=telegram_token
+$ export GITHUBSTATBOT_GITHUBCLIENTID=github_client_id
+$ export GITHUBSTATBOT_GITHUBCLIENTSECRET=github_client_secret
+$ ./githubstatbot
 ```
 
 ### Run with docker
@@ -46,23 +53,13 @@ NOT forget insert environment variable in command.
 
 Start bot only inline prompt command
 
-##### Linux, macOS
-
 ```bash
 docker build -t githubstatbot:latest .
-docker run --rm -p 8080:8080 -e GITHUBSTATBOT_TELEGRAMTOKEN='' \
+docker run --rm -p 8080:8080 \
+-e GITHUBSTATBOT_MODE='local' \
+-e GITHUBSTATBOT_TELEGRAMTOKEN='' \
 -e GITHUBSTATBOT_GITHUBCLIENTID='' \
 -e GITHUBSTATBOT_GITHUBCLIENTSECRET='' \
---name githubstatbot githubstatbot:latest
-```
-
-##### Windows
-
-```bash
-docker build -t githubstatbot:latest .
-docker run --rm -p 8080:8080 -e GITHUBSTATBOT_TELEGRAMTOKEN='' ^
--e GITHUBSTATBOT_GITHUBCLIENTID='' ^
--e GITHUBSTATBOT_GITHUBCLIENTSECRET='' ^
 --name githubstatbot githubstatbot:latest
 ```
 
@@ -70,7 +67,6 @@ docker run --rm -p 8080:8080 -e GITHUBSTATBOT_TELEGRAMTOKEN='' ^
 
 ```bash
 docker run --rm -p 8080:8080 -e GITHUBSTATBOT_TELEGRAMTOKEN='' \
--e GITHUBSTATBOT_MODE='prod' \
 -e GITHUBSTATBOT_GITHUBCLIENTID='' \
 -e GITHUBSTATBOT_GITHUBCLIENTSECRET='' \
 -e GITHUBSTATBOT_DBPATH='/app/data/database.db' \
