@@ -160,7 +160,7 @@ func authCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	text := buf.String()
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, text)
 
-	log.Printf("Was authentication user with id=%s", update.Message.Chat.ID)
+	log.Printf("Was authentication user with id=%d", update.Message.Chat.ID)
 	return msg
 }
 
@@ -287,7 +287,7 @@ func cancelCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 
 	mess := tgbotapi.NewMessage(update.Message.Chat.ID, "GitHub аккаунт отключен!")
 
-	log.Printf("Was cancel authentication user with id=%s", update.Message.Chat.ID)
+	log.Printf("Was cancel authentication user with id=%d", update.Message.Chat.ID)
 
 	return mess
 }

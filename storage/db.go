@@ -33,6 +33,7 @@ func New(path string) *Store {
 func (s *Store) Add(chatId int64, accessToken string) error {
 	db, err := open(s)
 	if err != nil {
+		log.Println(err)
 		return err
 	}
 	defer db.Close()
@@ -52,6 +53,7 @@ func (s *Store) Add(chatId int64, accessToken string) error {
 func (s *Store) Get(chatId int64) (string, error) {
 	db, err := open(s)
 	if err != nil {
+		log.Printf("Error on get element for chatId=%s, %v\n", chatId, err)
 		return "", err
 	}
 	defer db.Close()
@@ -88,6 +90,7 @@ func (s *Store) Delete(chatId int64) error {
 func open(s *Store) (*bolt.DB, error) {
 	db, err := bolt.Open(s.path, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
+		log.Printf("Error on open database\n")
 		return nil, err
 	}
 
