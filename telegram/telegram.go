@@ -168,6 +168,7 @@ func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 	//found token by chatId in store
 	token, err := bot.tokenStore.Get(update.Message.Chat.ID)
 	if err != nil || token == "" {
+		fmt.Printf("Token=%s, Error: %v", token, err)
 		return errorMessage(update)
 	}
 	//client to github
