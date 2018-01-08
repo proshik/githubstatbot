@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"fmt"
 )
 
 type AccessTokenReq struct {
