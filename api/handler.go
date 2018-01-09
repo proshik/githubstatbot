@@ -32,7 +32,7 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request, p httprouter.Par
 
 func (h *Handler) Version(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	if checkAuth(w, r, h.basicAuth) {
-		io.WriteString(w, "<html><body>Version: 0.5.2</body></html>")
+		io.WriteString(w, "<html><body>Version: 0.5.3</body></html>")
 		return
 	}
 
