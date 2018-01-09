@@ -90,26 +90,41 @@ func (h *Handler) GitHubRedirect(w http.ResponseWriter, r *http.Request, _ httpr
 	json.NewEncoder(b).Encode(bodyReq)
 
 	req, err := http.NewRequest("POST", "https://github.com/login/oauth/access_token", b)
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Content-Type", "application/json")
-
-	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("Erorr on build request object. Error: %v\n", err)
 		h.bot.InformAuth(chatId, false)
 		http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
 		return
 	}
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Erorr on request got github.com/login/oauth/access_token. %v\n", err)
+		h.bot.InformAuth(chatId, false)
+		http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
+		return
+	}
 
 	defer resp.Body.Close()
+
 	//decode response with accessToken
 	var bodyResp AccessTokenResp
 	json.NewDecoder(resp.Body).Decode(&bodyResp)
+
+	if bodyResp.AccessToken == "" {
+		log.Printf("Unexpected error. AccessToken from github is empty")
+		h.bot.InformAuth(chatId, false)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	//save token in storage
 	err = h.tokenStore.Add(int64(chatId), bodyResp.AccessToken)
 	if err != nil {
 		log.Printf("Error on add GitHub user token in db, %v\n", err)
+		h.bot.InformAuth(chatId, false)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

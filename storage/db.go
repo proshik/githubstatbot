@@ -1,9 +1,9 @@
 package storage
 
 import (
+	"encoding/binary"
 	"github.com/boltdb/bolt"
 	"log"
-	"strconv"
 	"time"
 )
 
@@ -40,7 +40,7 @@ func (s *Store) Add(chatId int64, accessToken string) error {
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(tokenBucket))
-		err := b.Put([]byte(strconv.Itoa(int(chatId))), []byte(accessToken))
+		err := b.Put(itob(chatId), []byte(accessToken))
 		return err
 	})
 	if err != nil {
@@ -61,7 +61,7 @@ func (s *Store) Get(chatId int64) (string, error) {
 	var token []byte
 	db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(tokenBucket))
-		token = b.Get([]byte(strconv.Itoa(int(chatId))))
+		token = b.Get(itob(chatId))
 		return nil
 	})
 
@@ -77,7 +77,7 @@ func (s *Store) Delete(chatId int64) error {
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(tokenBucket))
-		err := b.Delete([]byte(strconv.Itoa(int(chatId))))
+		err := b.Delete(itob(chatId))
 		return err
 	})
 	if err != nil {
@@ -95,4 +95,10 @@ func open(s *Store) (*bolt.DB, error) {
 	}
 
 	return db, nil
+}
+
+func itob(v int64) []byte {
+	b := make([]byte, 8)
+	binary.BigEndian.PutUint64(b, uint64(v))
+	return b
 }
