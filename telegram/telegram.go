@@ -187,7 +187,7 @@ func languageCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 			//receipt language info
 			lang, err := client.Language(userRepos.username, *r.Name)
 			if err != nil {
-				log.Printf("Error on request language for user=%s, repo=%s", userRepos.username, *r.Name)
+				log.Printf("Error on request language for user=%s, repo=%s. %v", userRepos.username, *r.Name, err)
 			}
 			languageChan <- lang
 		}(&wg, repo)
@@ -248,7 +248,7 @@ func calcCountCommand(u *tgbotapi.Update, b *Bot, count func(r *github.Repo) *in
 			//receipt language info
 			r, err := client.Repo(userRepos.username, *r.Name)
 			if err != nil {
-				log.Printf("Error on request count for user=%s, repo=%s", userRepos.username, *r.Name)
+				log.Printf("Error on request count for user=%s, repo=%s. %v", userRepos.username, *r.Name, err)
 			}
 			totalCount.Lock()
 			totalCount.count += *count(r)
@@ -287,7 +287,7 @@ func cancelCommand(update *tgbotapi.Update, bot *Bot) tgbotapi.Chattable {
 
 	mess := tgbotapi.NewMessage(update.Message.Chat.ID, "GitHub аккаунт отключен!")
 
-	log.Printf("Was cancel authentication user with id=%d", update.Message.Chat.ID)
+	log.Printf("Was success cancel authentication user with id=%d", update.Message.Chat.ID)
 
 	return mess
 }

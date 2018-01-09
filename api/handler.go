@@ -63,13 +63,13 @@ func checkAuth(w http.ResponseWriter, r *http.Request, ba *BasicAuth) bool {
 func (h *Handler) GitHubRedirect(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	code := r.URL.Query().Get("code")
 	if code == "" {
-		log.Printf("Code is empty in response from github")
+		log.Printf("Unexpected behavior. Code is empty in response from github")
 		http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
 		return
 	}
 	state := r.URL.Query().Get("state")
 	if state == "" {
-		log.Printf("State is empty in response from github")
+		log.Printf("Unexpected behavior. State is empty in response from github")
 		http.Redirect(w, r, telegram.RedirectBotAddress, http.StatusMovedPermanently)
 		return
 	}
