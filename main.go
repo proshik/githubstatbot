@@ -20,23 +20,26 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	configureLog(cfg.LogDir)
-
+	// config logging
+	log.SetOutput(os.Stdout)
+	// init connect to db(boltDB)
 	db := storage.New(cfg.DbPath)
+	// create storage for generated statuses for request to github.com
 	stateStore := storage.NewStateStore()
+	// create oAuth object
 	oAuth := github.NewOAuth(cfg.GitHubClientId, cfg.GitHubClientSecret)
-
+	// create Telegram Bot object
 	bot, err := telegram.NewBot(cfg.TelegramToken, false, db, stateStore, oAuth)
 	if err != nil {
 		log.Panic(err)
 	}
+	// run major method for read updates messages from telegram
 	go bot.ReadUpdates()
 
+	// initialize handler
 	basicAuth := &api.BasicAuth{Username: cfg.AuthBasicUsername, Password: cfg.AuthBasicPassword}
-
 	handler := api.New(oAuth, db, stateStore, bot, basicAuth, cfg.StaticFilesDir)
-
+	// configuration router
 	router := httprouter.New()
 	router.GET("/", handler.Index)
 	router.GET("/version", handler.Version)
@@ -50,20 +53,6 @@ func main() {
 		startHttpsServer(router, cfg.TlsDir)
 		http.ListenAndServe(":"+cfg.Port, http.HandlerFunc(handler.RedirectToHttps))
 	}
-}
-
-func configureLog(_ string) {
-	//if logFileAddr == "" {
-	//	panic(errors.New("Log file is empty"))
-	//}
-
-	//logFile, err := os.OpenFile(logFileAddr + "githubstatbot.log", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
-	//if err != nil {
-	//	panic(err)
-	//}
-
-	//mw := io.MultiWriter(os.Stdout)
-	log.SetOutput(os.Stdout)
 }
 
 func startHttpsServer(h http.Handler, tlsDir string) {
