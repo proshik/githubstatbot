@@ -18,17 +18,19 @@ const (
 )
 
 var (
-	//Chains
-	//-commands
+	// Chains
+	// commands
 	startC    = make(chan tgbotapi.Update)
 	authC     = make(chan tgbotapi.Update)
 	languageC = make(chan tgbotapi.Update)
 	starC     = make(chan tgbotapi.Update)
 	forkC     = make(chan tgbotapi.Update)
 	cancelC   = make(chan tgbotapi.Update)
-	//-send message
+
+	// send message
 	messages = make(chan tgbotapi.Chattable)
-	//Randomize
+
+	// randomize runes for state to send request into github api
 	letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 )
 
@@ -256,6 +258,7 @@ func calcCountCommand(u *tgbotapi.Update, b *Bot, count func(r *github.Repo) *in
 		}(&wg, repo)
 
 	}
+
 	//wait before not calculate all count values by user repos
 	wg.Wait()
 	//create text messages for user
@@ -323,7 +326,7 @@ func reposAuthUser(client *github.Client) (*userRepos, error) {
 
 func reposSpecificUser(username string, client *github.Client) (*userRepos, error) {
 	//receipt info for user
-	username, err := client.SpecificUser(username)
+	specificUser, err := client.SpecificUser(username)
 	if err != nil {
 		if ghErr, ok := err.(*gh.ErrorResponse); ok {
 			if ghErr.Response.StatusCode == 404 {
@@ -334,7 +337,7 @@ func reposSpecificUser(username string, client *github.Client) (*userRepos, erro
 		}
 	}
 	//receipt user repositories
-	repos, err := client.Repos(username)
+	repos, err := client.Repos(specificUser)
 	if err != nil {
 		return nil, &messageError{"Не найдены репозитории пользователя"}
 	}

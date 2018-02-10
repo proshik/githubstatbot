@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/proshik/githubstatbot.svg?branch=master)](https://travis-ci.org/proshik/githubstatbot)
 [![Go Report Card](https://goreportcard.com/badge/github.com/proshik/githubstatbot)](https://goreportcard.com/report/github.com/proshik/githubstatbot)
-[![codecov](https://codecov.io/gh/proshik/jalmew/branch/master/graph/badge.svg)](https://codecov.io/gh/proshik/githubstatbot)
+[![codecov](https://codecov.io/gh/proshik/githubstatbot/branch/master/graph/badge.svg)](https://codecov.io/gh/proshik/githubstatbot)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/proshik/githubstatbot/issues)
 
 [Telegram bot](https://t.me/githubstatbot) which show GitHub statistic by languages, stars and forks. Written on GO.
@@ -82,7 +82,7 @@ See bot output information.
 
 - tests;
 - internalization;
-- change polling method on webhook.
+- change polling on webhook.
 - build docker image on travis; 
 
 ## Patch 
