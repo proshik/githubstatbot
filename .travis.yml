@@ -1,12 +1,14 @@
 sudo: required
 
-services:
-  - docker
-
 language: go
 
 go:
-  - 1.9
+  - "1.10"
+
+addons:
+  apt:
+    packages:
+      - docker-ce
 
 script: make cover
 
@@ -21,15 +23,15 @@ after_success:
 #    - secure: "gNAa6Pcb4BLBAL7Q4UZe+E8yn6D+PcI+I+OryxcXvQk8Zf7RPNOkRI5kmFmrAg1ffD46NxXN8qn7yHRoNpyDjOPpM5EIUBNzy8D3C2Dcg8+ZhOTmR4ptTsM+Ct43vn31SYRgEdaPWEJuGXfjuoOKmRAsnEaAzgm43S7i5Fbrp+8JWy08niWFHWrZZSrlPBuseaD1NoyG6h3XkdNtdyIC+tYxBISDtkW8+iPyCVQJ+fkrX9zY6mIOXdCzWoFXj5E2LnyU1Y9lzD79n1TDcy6e13SYqK2VP07MAZyyglF72GmG08Ql9cWS2hB280mfTwzg3DTACRlbhdbf495Pf2UAwcz9QDk/WobwaWhZAs6d8srrf4GroDJkOx3/Lmx4INzNn4D1FP3BFIz1vb58PqfpjxObZosngw/VktRd6pJ9nIDuwgO63PO8e7hvfVtv2hPr9sHQoZ3dsJjhFHrnlt3wkog5XPROwiIo6GQkA0IRwQj4rwFrqnr/Zxxzv6KvFsuqsyrZUL06SrABkiQ6iCywNxtJzt/LaLGx+YoHyO9dUKMJsT7/vcJQ7d7Qu6ZS/5MZ+MW+dbvZAhDdCTbwT47yYPt5sZZGeQS0aZD3K3lyZgGAuHoM6Jr81Q5GhVVDYTjkZ9LzKts18XGLS8DjeUEOVSC/mGIP1B5pxp+9jy2fywY=" #DOCKER_PASS
 #    - COMMIT=${TRAVIS_COMMIT::7}
 #
-#after_success:
-#  - bash <(curl -s https://codecov.io/bash)
-#
-#  # export
-#  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
-#  - export GITHUBSTATBOT=githubstatbot
-#
-#  # docker
-#  - docker login -u "$DOCKER_USER" --password-stdin "$DOCKER_PASS"
-#  - docker build -t $GITHUBSTATBOT:$COMMIT .
-#  - docker tag $GITHUBSTATBOT:$COMMIT $GITHUBSTATBOT:$TAG
-#  - docker push $GITHUBSTATBOT
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+  # export
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+  - export GITHUBSTATBOT=githubstatbot
+
+  # docker
+  - docker build -t $GITHUBSTATBOT:$COMMIT .
+  - docker tag $GITHUBSTATBOT:$COMMIT $GITHUBSTATBOT:$TAG
+  - docker login -u $DOCKER_USER -p $DOCKER_PASS
+  - docker push $GITHUBSTATBOT
