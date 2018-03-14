@@ -32,9 +32,6 @@ after_success:
 
   # docker
   - docker build -t proshik/$GITHUBSTATBOT:$COMMIT .
-  - docker images ps
   - docker tag proshik/$GITHUBSTATBOT:$COMMIT proshik/$GITHUBSTATBOT:$TAG
   - docker login -u $DOCKER_USER -p $DOCKER_PASS
-  - echo $COMMIT
-  - echo $GITHUBSTATBOT
-  - docker push proshik/$GITHUBSTATBOT:$COMMIT
+  - docker push proshik/$GITHUBSTATBOT:$TAG
