@@ -31,9 +31,9 @@ after_success:
   - COMMIT=${TRAVIS_COMMIT::7}
 
   # docker
-  - docker build -t $GITHUBSTATBOT:$COMMIT .
+  - docker build -t proshik/$GITHUBSTATBOT:$COMMIT .
   - docker images ps
-  - docker tag $GITHUBSTATBOT:$COMMIT $GITHUBSTATBOT:$TAG
+  - docker tag proshik/$GITHUBSTATBOT:$COMMIT proshik/$GITHUBSTATBOT:$TAG
   - docker login -u $DOCKER_USER -p $DOCKER_PASS
   - echo $COMMIT
   - echo $GITHUBSTATBOT
