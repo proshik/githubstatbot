@@ -16,13 +16,10 @@ after_success:
   - make cover
   - bash <(curl -s https://codecov.io/bash)
 
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
-
   # export
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
   - export GITHUBSTATBOT=proshik/githubstatbot
-  - COMMIT=${TRAVIS_COMMIT::7}
+  - export COMMIT=${TRAVIS_COMMIT::7}
 
   # docker
   - docker build -t $GITHUBSTATBOT:$COMMIT .
