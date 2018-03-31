@@ -72,6 +72,7 @@ func startHttpsServer(h http.Handler, tlsDir string) {
 		Prompt: autocert.AcceptTOS,
 		Cache:  autocert.DirCache(tlsDir),
 	}
+	m.HTTPHandler(h)
 
 	httpsServer.Addr = ":443"
 	httpsServer.TLSConfig = &tls.Config{GetCertificate: m.GetCertificate}
