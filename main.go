@@ -50,38 +50,39 @@ func main() {
 	if cfg.Mode == "local" {
 		http.ListenAndServe(":"+cfg.Port, router)
 	} else {
-		startHttpsServer(router, cfg.TlsDir)
-		http.ListenAndServe(":"+cfg.Port, http.HandlerFunc(handler.RedirectToHttps))
+		startHttpsServer(router, cfg.TlsDir, cfg.Port, handler)
 	}
 }
 
-func startHttpsServer(h http.Handler, tlsDir string) {
+func startHttpsServer(h http.Handler, tlsDir string, port string, _ api.Handler) {
 	if tlsDir == "" {
 		log.Printf("TLS_DIR is empty, so skip serving https")
 		return
 	}
+	manager := autocert.Manager{
+		Prompt: autocert.AcceptTOS,
+		Cache:  autocert.DirCache(tlsDir),
+	}
 
 	httpsServer := &http.Server{
+		Addr: ":443",
+		TLSConfig: &tls.Config{
+			GetCertificate: manager.GetCertificate,
+		},
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 5 * time.Second,
 		IdleTimeout:  120 * time.Second,
 		Handler:      h,
 	}
 
-	m := autocert.Manager{
-		Prompt: autocert.AcceptTOS,
-		Cache:  autocert.DirCache(tlsDir),
-	}
-	m.HTTPHandler(h)
-
-	httpsServer.Addr = ":443"
-	httpsServer.TLSConfig = &tls.Config{GetCertificate: m.GetCertificate}
-
 	go func() {
 		log.Printf("Starting HTTPS server on %s\n", httpsServer.Addr)
-		err := httpsServer.ListenAndServeTLS("", "")
-		if err != nil {
-			log.Fatalf("httpsSrv.ListendAndServeTLS() failed with %s", err)
-		}
+		//http.ListenAndServe(":"+port, http.HandlerFunc(handler.RedirectToHttps))
+		http.ListenAndServe(":"+port, manager.HTTPHandler(nil))
+
 	}()
+	err := httpsServer.ListenAndServeTLS("", "")
+	if err != nil {
+		log.Fatalf("httpsSrv.ListendAndServeTLS() failed with %s", err)
+	}
 }
