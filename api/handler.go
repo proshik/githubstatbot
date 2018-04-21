@@ -27,10 +27,12 @@ type AccessTokenResp struct {
 var client = &http.Client{}
 
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	log.Printf("Request on index.html")
 	http.ServeFile(w, r, h.staticPath+"/index.html")
 }
 
 func (h *Handler) Version(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	log.Printf("Request on /version")
 	if checkAuth(w, r, h.basicAuth) {
 		io.WriteString(w, "<html><body>Version: 0.5.3</body></html>")
 		return
