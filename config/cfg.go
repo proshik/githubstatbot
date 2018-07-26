@@ -9,7 +9,7 @@ const (
 
 type Config struct {
 	Mode               string `default:"prod"`
-	Port               string `default:"8080"`
+	Port               string `envconfig:"PORT",default:"8080"`
 	TlsDir             string `default:"./"`
 	LogDir             string `default:"./log/"`
 	StaticFilesDir     string `default:"./static"`
