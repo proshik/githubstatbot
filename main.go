@@ -23,7 +23,8 @@ func main() {
 	// config logging
 	log.SetOutput(os.Stdout)
 	// init connect to db(boltDB)
-	db := storage.New(cfg.DbPath)
+	//db := storage.New(cfg.DbPath)
+	db := storage.NewPostgres(cfg.DbUrl)
 	// create storage for generated statuses for request to github.com
 	stateStore := storage.NewStateStore()
 	// create oAuth object
@@ -35,7 +36,6 @@ func main() {
 	}
 	// run major method for read updates messages from telegram
 	go bot.ReadUpdates()
-
 	// initialize handler
 	basicAuth := &api.BasicAuth{Username: cfg.AuthBasicUsername, Password: cfg.AuthBasicPassword}
 	handler := api.New(oAuth, db, stateStore, bot, basicAuth, cfg.StaticFilesDir)

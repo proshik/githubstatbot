@@ -19,6 +19,7 @@ type Config struct {
 	TelegramToken      string `required:"true"`
 	AuthBasicUsername  string `default:"user"`
 	AuthBasicPassword  string `default:"password"`
+	DbUrl              string `envconfig:"JDBC_DATABASE_URL",default:"postgres://postgres:password@localhost:5432/githubstatbot?sslmode=disable"`
 }
 
 func Load() (*Config, error) {

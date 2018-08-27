@@ -43,7 +43,7 @@ func (h *Handler) Version(w http.ResponseWriter, r *http.Request, p httprouter.P
 	w.Write([]byte("401 Unauthorized\n"))
 }
 
-func checkAuth(w http.ResponseWriter, r *http.Request, ba *BasicAuth) bool {
+func checkAuth(_ http.ResponseWriter, r *http.Request, ba *BasicAuth) bool {
 	s := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
 	if len(s) != 2 {
 		return false
