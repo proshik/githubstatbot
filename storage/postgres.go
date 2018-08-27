@@ -73,7 +73,7 @@ func (postgres *Postgres) Get(chatId int64) (string, error) {
 	err = row.Scan(&accessToken)
 	if err == sql.ErrNoRows {
 		return "", nil
-	} else {
+	} else if err != nil {
 		return "", err
 	}
 
