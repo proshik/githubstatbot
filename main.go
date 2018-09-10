@@ -1,18 +1,15 @@
 package main
 
 import (
-	"crypto/tls"
 	"github.com/julienschmidt/httprouter"
 	"github.com/proshik/githubstatbot/api"
 	"github.com/proshik/githubstatbot/config"
 	"github.com/proshik/githubstatbot/github"
 	"github.com/proshik/githubstatbot/storage"
 	"github.com/proshik/githubstatbot/telegram"
-	"golang.org/x/crypto/acme/autocert"
 	"log"
 	"net/http"
 	"os"
-	"time"
 )
 
 func main() {
@@ -22,67 +19,36 @@ func main() {
 	}
 	// config logging
 	log.SetOutput(os.Stdout)
-	// init connect to db(boltDB)
-	//db := storage.New(cfg.DbPath)
+
+	// init connect postgresql
 	db := storage.NewPostgres(cfg.DbUrl)
+
 	// create storage for generated statuses for request to github.com
 	stateStore := storage.NewStateStore()
+
 	// create oAuth object
 	oAuth := github.NewOAuth(cfg.GitHubClientId, cfg.GitHubClientSecret)
+
 	// create Telegram Bot object
 	bot, err := telegram.NewBot(cfg.TelegramToken, false, db, stateStore, oAuth)
 	if err != nil {
 		log.Panic(err)
 	}
+
 	// run major method for read updates messages from telegram
 	go bot.ReadUpdates()
+
 	// initialize handler
 	basicAuth := &api.BasicAuth{Username: cfg.AuthBasicUsername, Password: cfg.AuthBasicPassword}
 	handler := api.New(oAuth, db, stateStore, bot, basicAuth, cfg.StaticFilesDir)
+
 	// configuration router
 	router := httprouter.New()
 	router.GET("/", handler.Index)
 	router.GET("/version", handler.Version)
 	router.GET("/github_redirect", handler.GitHubRedirect)
 
-	//Run HTTPS server
-	log.Printf("Starting HTTP server in mode %s on port %s\n", cfg.Mode, cfg.Port)
-	if cfg.Mode == "local" {
-		http.ListenAndServe(":"+cfg.Port, router)
-	} else {
-		startHttpsServer(router, cfg.TlsDir, cfg.Port, handler)
-	}
-}
-
-func startHttpsServer(h http.Handler, tlsDir string, port string, _ api.Handler) {
-	if tlsDir == "" {
-		log.Printf("TLS_DIR is empty, so skip serving https")
-		return
-	}
-	manager := autocert.Manager{
-		Prompt: autocert.AcceptTOS,
-		Cache:  autocert.DirCache(tlsDir),
-	}
-
-	httpsServer := &http.Server{
-		Addr: ":443",
-		TLSConfig: &tls.Config{
-			GetCertificate: manager.GetCertificate,
-		},
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
-		IdleTimeout:  120 * time.Second,
-		Handler:      h,
-	}
-
-	go func() {
-		log.Printf("Starting HTTPS server on %s\n", httpsServer.Addr)
-		//http.ListenAndServe(":"+port, http.HandlerFunc(handler.RedirectToHttps))
-		http.ListenAndServe(":"+port, manager.HTTPHandler(nil))
-
-	}()
-	err := httpsServer.ListenAndServeTLS("", "")
-	if err != nil {
-		log.Fatalf("httpsSrv.ListendAndServeTLS() failed with %s", err)
-	}
+	//Run HTTP server
+	log.Printf("Starting HTTP server on port %s\n", cfg.Port)
+	http.ListenAndServe(":"+cfg.Port, router)
 }
