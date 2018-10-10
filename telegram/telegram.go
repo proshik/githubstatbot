@@ -17,6 +17,14 @@ const (
 	forkCountTextFormat = "Репозитории пользователя *%s* форкнули целых *%d* раз"
 )
 
+const (
+	BYTE = 1 << (10 * iota)
+	KILOBYTE
+	MEGABYTE
+	GIGABYTE
+	TERABYTE
+)
+
 var (
 	// Chains
 	// commands
@@ -35,8 +43,10 @@ var (
 )
 
 type language struct {
-	Title      string
-	Percentage float32
+	Title       string
+	Percentage  float32
+	NumberBytes float64
+	Unit        string
 }
 
 type userRepos struct {
@@ -357,8 +367,9 @@ func calcLanguagePercentages(languages map[string]int) []*language {
 	for key, value := range languages {
 		repoPercent := float32(value) * (float32(100) / totalSum)
 		roundRepoPercent := round(repoPercent, 0.1)
+		volume, unit := transformBytesToKbOrMb(value)
 		if roundRepoPercent >= 0.1 {
-			result = append(result, &language{key, roundRepoPercent})
+			result = append(result, &language{key, roundRepoPercent, volume, unit})
 		} else {
 			totalByteOtherLanguages += value
 		}
@@ -368,8 +379,9 @@ func calcLanguagePercentages(languages map[string]int) []*language {
 	//calculate percentage for language with less then 0.1% from total count
 	if totalByteOtherLanguages != 0 {
 		percent := round(float32(totalByteOtherLanguages)*(float32(100)/totalSum), 0.1)
+		volume, unit := transformBytesToKbOrMb(totalByteOtherLanguages)
 		if percent != 0.0 {
-			result = append(result, &language{"Other languages", percent})
+			result = append(result, &language{"Other languages", percent, volume, unit})
 		}
 	}
 	return result
@@ -384,7 +396,7 @@ func createLangStatText(username string, statistics []*language) string {
 	buf.WriteString(fmt.Sprintf("Username: *%s*\n", username))
 	buf.WriteString("\n")
 	for _, l := range statistics {
-		buf.WriteString(fmt.Sprintf("*%s* %.1f%%\n", l.Title, l.Percentage))
+		buf.WriteString(fmt.Sprintf("*%s* %.1f%% _(%.1f%s)_ \n", l.Title, l.Percentage, l.NumberBytes, l.Unit))
 	}
 	return buf.String()
 }
@@ -394,6 +406,19 @@ func round(x, unit float32) float32 {
 		return float32(int32(x/unit+0.5)) * unit
 	}
 	return float32(int32(x/unit-0.5)) * unit
+}
+
+func transformBytesToKbOrMb(value int) (float64, string) {
+	var numberKb float64
+	var unit string
+	if value < MEGABYTE {
+		numberKb = float64(value) / KILOBYTE
+		unit = "Kb"
+	} else {
+		numberKb = float64(value) / MEGABYTE
+		unit = "Mb"
+	}
+	return numberKb, unit
 }
 
 func randStringRunes(n int) string {
