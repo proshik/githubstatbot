@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/proshik/githubstatbot/branch/master/graph/badge.svg)](https://codecov.io/gh/proshik/githubstatbot)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/proshik/githubstatbot/issues)
 
-[Telegram bot](https://t.me/githubstatbot) which show GitHub statistic by languages, stars and forks. Written on GO.
+[Telegram bot](https://t.me/githubstatbot) will show GitHub statistic by languages, stars and forks. Written on GO.
 
 ## Run
 
