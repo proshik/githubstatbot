@@ -5,7 +5,7 @@ WORKDIR /go/src/github.com/proshik/githubstatbot
 # Add all from your project inside workdir of docker image
 ADD . /go/src/github.com/proshik/githubstatbot
 # Then run your script to install dependencies and build application
-RUN make
+RUN CGO_ENABLED=0 go build -v
 # Next start another building context
 FROM alpine:3.6
 # add certificates
