@@ -8,18 +8,17 @@ const (
 )
 
 type Config struct {
-	Port               string `envconfig:"PORT",default:"8080"`
-	StaticFilesDir     string `default:"./static"`
+	Port               string `envconfig:"PORT" default:"8080"`
+	DbUrl              string `envconfig:"DATABASE_URL" default:"postgres://postgres:password@localhost:5432/githubstatbot?sslmode=disable"`
 	GitHubClientId     string `required:"true"`
 	GitHubClientSecret string `required:"true"`
 	TelegramToken      string `required:"true"`
+	StaticFilesDir     string `default:"./static"`
 	AuthBasicUsername  string `default:"user"`
 	AuthBasicPassword  string `default:"password"`
-	DbUrl              string `envconfig:"DATABASE_URL"`
 }
 
 func Load() (*Config, error) {
-
 	cfg := new(Config)
 
 	err := envconfig.Process(SERVICENAME, cfg)

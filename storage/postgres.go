@@ -13,7 +13,7 @@ const TABLE_USERS = `create table if not exists users
   id           serial,
   created_date timestamp default now(),
   chat_id      bigint unique     not null,
-  access_token text unique     not null
+  access_token text unique     	 not null
 );`
 
 type Postgres struct {

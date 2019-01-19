@@ -26,14 +26,14 @@ func NewBot(
 	stateStore *storage.StateStore,
 	oAuth *github.OAuth) (*Bot, error) {
 
-	//authorize telegram bot
+	// authorize telegram bot
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		return nil, err
 	}
-	//set debug mode for bot
+	// set debug mode for bot
 	bot.Debug = debug
-	//fill botName and Telegram bot URL
+	// fill botName and Telegram bot URL
 	BotName = bot.Self.UserName
 	RedirectBotAddress += BotName
 

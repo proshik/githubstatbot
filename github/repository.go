@@ -23,14 +23,14 @@ func (github *Client) Repos(user string) ([]*Repo, error) {
 		if err != nil {
 			return nil, err
 		}
-		//fill result slice
+		// fill result slice
 		for _, r := range list {
 			if *r.Fork {
 				continue
 			}
 			result = append(result, &Repo{r.Name, r.Language, r.StargazersCount, r.ForksCount})
 		}
-		//check on exist next page
+		// check on exist next page
 		if page <= resp.LastPage {
 			page++
 		} else {

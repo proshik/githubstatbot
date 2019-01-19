@@ -5,30 +5,43 @@
 [![codecov](https://codecov.io/gh/proshik/githubstatbot/branch/master/graph/badge.svg)](https://codecov.io/gh/proshik/githubstatbot)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/proshik/githubstatbot/issues)
 
-[Telegram bot](https://t.me/githubstatbot) which show GitHub statistic by languages, stars and forks. Written on GO.
+[Telegram bot](https://t.me/githubstatbot) will show GitHub statistic by languages, stars and forks. Written on GO.
 
 ## Run
 
 1. Download [githubstatbot](https://github.com/proshik/githubstatbot/releases)
-2. You need talk with [BotFather](https://telegram.me/botfather) and follow a few simple steps for register your bot and take access token(GITHUBSTATBOT_TELEGRAMTOKEN)
-3. Go to [GitHub OAuth App](https://github.com/settings/developers) and create new OAuth Apps. You will have `Client ID`(GITHUBSTATBOT_GITHUBCLIENTID) and `Client Secret`(GITHUBSTATBOT_GITHUBCLIENTSECRET)
-4. Export environment variables, taking on previous steps and start application:
+2. You need to talk with [BotFather](https://telegram.me/botfather) and follow the few simple steps for the register Telegram bot. So you will get access token(GITHUBSTATBOT_TELEGRAMTOKEN)
+3. Go to [GitHub OAuth App](https://github.com/settings/developers) and create the new OAuth Apps. You will get `Client ID`(GITHUBSTATBOT_GITHUBCLIENTID) and `Client Secret`(GITHUBSTATBOT_GITHUBCLIENTSECRET)
+4. Export the environment variables, from the previous steps and start the application:
 
-```bash
+```
 # Required environment variables
+
+# port, like: 8080
+$ export PORT=
+
+# database URL, like: postgres://postgres:password@localhost:5432/githubstatbot?sslmode=disable
+$ export DATABASE_URL=
+
+# telegram token, like: 47174:342lt;j34;lkgj;l3kgj
 $ export GITHUBSTATBOT_TELEGRAMTOKEN=
+
+# see to github account settings, like: b2fb4db59dj20g8d92d2
 $ export GITHUBSTATBOT_GITHUBCLIENTID=
+
+# see to the github account settings, like: 96d687e72c049sku1lf5567ca810cd09eaacbe6
 $ export GITHUBSTATBOT_GITHUBCLIENTSECRET=
 
 # Not required environment variables
-# export GITHUBSTATBOT_MODE=
-# export GITHUBSTATBOT_PORT=
-# export GITHUBSTATBOT_LOGDIR=
-# export GITHUBSTATBOT_TLSDIR=
-# export GITHUBSTATBOT_STATICFILESDIR=
-# export GITHUBSTATBOT_DBPATH=
-# export GITHUBSTATBOT_AUTHBASICUSERNAME=
-# export GITHUBSTATBOT_AUTHBASICPASSWORD=
+
+# static files directory, default: ./static
+$ export GITHUBSTATBOT_STATICFILESDIR=
+
+# basic auth username, default: username
+$ export GITHUBSTATBOT_AUTHBASICUSERNAME=
+
+# basic auth password, default: password
+$ export GITHUBSTATBOT_AUTHBASICPASSWORD=
 
 $ ./githubstatbot
 ```  
@@ -38,7 +51,8 @@ $ ./githubstatbot
 ```bash
 $ go build
 
-$ export GITHUBSTATBOT_MODE=local 
+$ export PORT=port
+$ export DATABASE_URL=database_url
 $ export GITHUBSTATBOT_TELEGRAMTOKEN=telegram_token
 $ export GITHUBSTATBOT_GITHUBCLIENTID=github_client_id
 $ export GITHUBSTATBOT_GITHUBCLIENTSECRET=github_client_secret
@@ -47,16 +61,18 @@ $ ./githubstatbot
 
 ### Run with docker
 
-NOT forget insert environment variable in command.
+You MUST NOT forget to insert the environment variables in command.
 
 #### Simple start
 
 Start bot only inline prompt command
 
 ```bash
-docker build -t githubstatbot:latest .
-docker run --rm -p 8080:8080 \
--e GITHUBSTATBOT_MODE='local' \
+$ docker build -t githubstatbot:latest .
+
+$ docker run --rm -p 8080:8080 \
+-e PORT='8080' \
+-e DATABASE_URL='' \
 -e GITHUBSTATBOT_TELEGRAMTOKEN='' \
 -e GITHUBSTATBOT_GITHUBCLIENTID='' \
 -e GITHUBSTATBOT_GITHUBCLIENTSECRET='' \
@@ -66,7 +82,10 @@ docker run --rm -p 8080:8080 \
 #### Full start(production mode)
 
 ```bash
-docker run --rm -p 8080:8080 -e GITHUBSTATBOT_TELEGRAMTOKEN='' \
+$ docker run --rm -p 8080:8080 \
+-e PORT='8080' \
+-e DATABASE_URL='' \
+-e GITHUBSTATBOT_TELEGRAMTOKEN='' \
 -e GITHUBSTATBOT_GITHUBCLIENTID='' \
 -e GITHUBSTATBOT_GITHUBCLIENTSECRET='' \
 -e GITHUBSTATBOT_DBPATH='/app/data/database.db' \
@@ -80,11 +99,12 @@ See bot output information.
 
 ## TODO
 
-- tests;
-- internalization;
-- change polling on webhook.
-- build docker image on travis; 
+- statistics by commits by week, quarter and year;
+- support the notifications of user activities (statistics by commits) at the end of the week, quarter and year;
+- increase the test coverage;
+- add the internalization;
+- change method of receiving messages from the Telegram servers, from polling to the webhook.
 
 ## Patch 
 
-Welcome!
+You are welcome!
