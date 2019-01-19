@@ -1,0 +1,35 @@
+# github.com/boltdb/bolt v1.3.1
+github.com/boltdb/bolt
+# github.com/golang/protobuf v1.0.0
+github.com/golang/protobuf/proto
+# github.com/google/go-github v15.0.0+incompatible
+github.com/google/go-github/github
+# github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135
+github.com/google/go-querystring/query
+# github.com/julienschmidt/httprouter v1.1.0
+github.com/julienschmidt/httprouter
+# github.com/kelseyhightower/envconfig v1.3.0
+github.com/kelseyhightower/envconfig
+# github.com/lib/pq v1.0.0
+github.com/lib/pq
+github.com/lib/pq/oid
+# github.com/technoweenie/multipartstreamer v1.0.1
+github.com/technoweenie/multipartstreamer
+# golang.org/x/net v0.0.0-20180330215511-b68f30494add
+golang.org/x/net/context
+golang.org/x/net/context/ctxhttp
+# golang.org/x/oauth2 v0.0.0-20180314180239-fdc9e635145a
+golang.org/x/oauth2
+golang.org/x/oauth2/internal
+# golang.org/x/sys v0.0.0-20180329131831-378d26f46672
+golang.org/x/sys/unix
+# google.golang.org/appengine v1.0.0
+google.golang.org/appengine/urlfetch
+google.golang.org/appengine/internal
+google.golang.org/appengine/internal/urlfetch
+google.golang.org/appengine/internal/base
+google.golang.org/appengine/internal/datastore
+google.golang.org/appengine/internal/log
+google.golang.org/appengine/internal/remote_api
+# gopkg.in/telegram-bot-api.v4 v4.6.2
+gopkg.in/telegram-bot-api.v4
