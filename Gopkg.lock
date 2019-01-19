@@ -2,81 +2,104 @@
 
 
 [[projects]]
+  digest = "1:ed112122ed4a920d944cc99b9d00b0441c11685939c28462c719488d36fe29aa"
   name = "github.com/boltdb/bolt"
   packages = ["."]
+  pruneopts = ""
   revision = "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8"
   version = "v1.3.1"
 
 [[projects]]
+  digest = "1:bcb38c8fc9b21bb8682ce2d605a7d4aeb618abc7f827e3ac0b27c0371fdb23fb"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
+  pruneopts = ""
   revision = "925541529c1fa6821df4e44ce2723319eb2be768"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:0022cff7d0dd79dbfa78ce16fea20fb29d6fdfcfae67ee55cada2e422cedf8ee"
   name = "github.com/google/go-github"
   packages = ["github"]
+  pruneopts = ""
   revision = "e48060a28fac52d0f1cb758bc8b87c07bac4a87d"
   version = "v15.0.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:9abc49f39e3e23e262594bb4fb70abf74c0c99e94f99153f43b143805e850719"
   name = "github.com/google/go-querystring"
   packages = ["query"]
+  pruneopts = ""
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 
 [[projects]]
+  digest = "1:3c818dada3e41bdb0f509f78e6775610f1bb179449ec8c4c86a45fae35460f3f"
   name = "github.com/julienschmidt/httprouter"
   packages = ["."]
+  pruneopts = ""
   revision = "8c199fb6259ffc1af525cc3ad52ee60ba8359669"
   version = "v1.1"
 
 [[projects]]
+  digest = "1:b60a24f942c7031ece6c48bcab0b683c7d3d6aa9fd17e21459d9ae604da258fa"
   name = "github.com/kelseyhightower/envconfig"
   packages = ["."]
+  pruneopts = ""
   revision = "f611eb38b3875cc3bd991ca91c51d06446afa14c"
   version = "v1.3.0"
 
 [[projects]]
+  digest = "1:29145d7af4adafd72a79df5e41456ac9e232d5a28c1cd4dacf3ff008a217fc10"
   name = "github.com/lib/pq"
   packages = [
     ".",
-    "oid"
+    "oid",
   ]
+  pruneopts = ""
   revision = "4ded0e9383f75c197b3a2aaa6d590ac52df6fd79"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:3bfdafac43ceb125f775eb79b8ee8f1e976e227464434ffad40f956ac029e760"
   name = "github.com/technoweenie/multipartstreamer"
   packages = ["."]
+  pruneopts = ""
   revision = "a90a01d73ae432e2611d178c18367fbaa13e0154"
   version = "v1.0.1"
 
 [[projects]]
   branch = "master"
+  digest = "1:a2702fb9a1197a9d8dea2cdbc23f785d326563da44e261a8ecac9f1da5bad9cb"
   name = "golang.org/x/net"
   packages = [
     "context",
-    "context/ctxhttp"
+    "context/ctxhttp",
   ]
+  pruneopts = ""
   revision = "b68f30494add4df6bd8ef5e82803f308e7f7c59c"
 
 [[projects]]
   branch = "master"
+  digest = "1:e13a60dfc223b012633d565ce8a0a39530ce9ed00ee6b6a159279ac918ef936e"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
-    "internal"
+    "internal",
   ]
+  pruneopts = ""
   revision = "fdc9e635145ae97e6c2cb777c48305600cf515cb"
 
 [[projects]]
   branch = "master"
+  digest = "1:e80ec2e647548e8fd36bb104d39220f162b72f9222507f0fc1d5f0b7618a5e9f"
   name = "golang.org/x/sys"
   packages = ["unix"]
+  pruneopts = ""
   revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
 
 [[projects]]
+  digest = "1:934fb8966f303ede63aa405e2c8d7f0a427a05ea8df335dfdc1833dd4d40756f"
   name = "google.golang.org/appengine"
   packages = [
     "internal",
@@ -85,20 +108,31 @@
     "internal/log",
     "internal/remote_api",
     "internal/urlfetch",
-    "urlfetch"
+    "urlfetch",
   ]
+  pruneopts = ""
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
   version = "v1.0.0"
 
 [[projects]]
+  digest = "1:1a95777771ac93e770a5c5d25066de5fb10d43a7a1cb1dced6727c447490f10f"
   name = "gopkg.in/telegram-bot-api.v4"
   packages = ["."]
+  pruneopts = ""
   revision = "0e0af0c480ea98e982d5f4d45fb39577c6ab1e3e"
   version = "v4.6.2"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ddaf71fa12d61bdfaff50d93a5a781dde4d95bd3e9645b43be34114c4ed7c4f8"
+  input-imports = [
+    "github.com/boltdb/bolt",
+    "github.com/google/go-github/github",
+    "github.com/julienschmidt/httprouter",
+    "github.com/kelseyhightower/envconfig",
+    "github.com/lib/pq",
+    "golang.org/x/oauth2",
+    "gopkg.in/telegram-bot-api.v4",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

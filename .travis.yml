@@ -16,11 +16,11 @@ addons:
       - docker-ce
 
 script:
-  - make cover
+#  - make cover
   - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
 after_success:
-  - make cover
+#  - make cover
   - bash <(curl -s https://codecov.io/bash)
 
   # export
