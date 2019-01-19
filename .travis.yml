@@ -14,25 +14,25 @@ env:
 
 install: true
 
-#addons:
-#  apt:
-#    packages:
-#      - docker-ce
-#
-#script:
-##  - make cover
-#  - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-#
-#after_success:
-##  - make cover
-#  - bash <(curl -s https://codecov.io/bash)
-#
-#  # export
-#  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
-#  - export GITHUBSTATBOT=proshik/githubstatbot
-#  - export COMMIT=${TRAVIS_COMMIT::7}
-#
-#  # docker
-#  - docker build -t $GITHUBSTATBOT:$COMMIT .
-#  - docker tag $GITHUBSTATBOT:$COMMIT $GITHUBSTATBOT:$TAG
-#  - docker push $GITHUBSTATBOT:$TAG
+addons:
+  apt:
+    packages:
+      - docker-ce
+
+script:
+#  - make cover
+  - echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+
+after_success:
+#  - make cover
+  - bash <(curl -s https://codecov.io/bash)
+
+  # export
+  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
+  - export GITHUBSTATBOT=proshik/githubstatbot
+  - export COMMIT=${TRAVIS_COMMIT::7}
+
+  # docker
+  - docker build -t $GITHUBSTATBOT:$COMMIT .
+  - docker tag $GITHUBSTATBOT:$COMMIT $GITHUBSTATBOT:$TAG
+  - docker push $GITHUBSTATBOT:$TAG
