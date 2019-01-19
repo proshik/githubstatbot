@@ -1,10 +1,10 @@
 package storage
 
 import (
-	_ "github.com/lib/pq"
-	"log"
 	"database/sql"
 	"fmt"
+	_ "github.com/lib/pq"
+	"log"
 	"time"
 )
 

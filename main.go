@@ -1,18 +1,15 @@
 package main
 
 import (
-	"crypto/tls"
 	"github.com/julienschmidt/httprouter"
 	"github.com/proshik/githubstatbot/api"
 	"github.com/proshik/githubstatbot/config"
 	"github.com/proshik/githubstatbot/github"
 	"github.com/proshik/githubstatbot/storage"
 	"github.com/proshik/githubstatbot/telegram"
-	"golang.org/x/crypto/acme/autocert"
 	"log"
 	"net/http"
 	"os"
-	"time"
 )
 
 func main() {
@@ -46,43 +43,5 @@ func main() {
 	router.GET("/github_redirect", handler.GitHubRedirect)
 
 	//Run HTTPS server
-	log.Printf("Starting HTTP server in mode %s on port %s\n", cfg.Mode, cfg.Port)
-	if cfg.Mode == "local" {
-		http.ListenAndServe(":"+cfg.Port, router)
-	} else {
-		startHttpsServer(router, cfg.TlsDir, cfg.Port, handler)
-	}
-}
-
-func startHttpsServer(h http.Handler, tlsDir string, port string, _ api.Handler) {
-	if tlsDir == "" {
-		log.Printf("TLS_DIR is empty, so skip serving https")
-		return
-	}
-	manager := autocert.Manager{
-		Prompt: autocert.AcceptTOS,
-		Cache:  autocert.DirCache(tlsDir),
-	}
-
-	httpsServer := &http.Server{
-		Addr: ":443",
-		TLSConfig: &tls.Config{
-			GetCertificate: manager.GetCertificate,
-		},
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
-		IdleTimeout:  120 * time.Second,
-		Handler:      h,
-	}
-
-	go func() {
-		log.Printf("Starting HTTPS server on %s\n", httpsServer.Addr)
-		//http.ListenAndServe(":"+port, http.HandlerFunc(handler.RedirectToHttps))
-		http.ListenAndServe(":"+port, manager.HTTPHandler(nil))
-
-	}()
-	err := httpsServer.ListenAndServeTLS("", "")
-	if err != nil {
-		log.Fatalf("httpsSrv.ListendAndServeTLS() failed with %s", err)
-	}
+	http.ListenAndServe(":"+cfg.Port, router)
 }

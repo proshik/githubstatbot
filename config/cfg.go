@@ -8,18 +8,14 @@ const (
 )
 
 type Config struct {
-	Mode               string `default:"prod"`
 	Port               string `envconfig:"PORT",default:"8080"`
-	TlsDir             string `default:"./"`
-	LogDir             string `default:"./log/"`
 	StaticFilesDir     string `default:"./static"`
-	DbPath             string `default:"database.db"`
 	GitHubClientId     string `required:"true"`
 	GitHubClientSecret string `required:"true"`
 	TelegramToken      string `required:"true"`
 	AuthBasicUsername  string `default:"user"`
 	AuthBasicPassword  string `default:"password"`
-	DbUrl              string `envconfig:"DATABASE_URL",default:"postgres://postgres:password@localhost:5432/githubstatbot?sslmode=disable"`
+	DbUrl              string `envconfig:"DATABASE_URL"`
 }
 
 func Load() (*Config, error) {
