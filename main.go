@@ -50,5 +50,9 @@ func main() {
 
 	//Run HTTP server
 	log.Printf("Starting HTTP server on port %s\n", cfg.Port)
-	http.ListenAndServe(":"+cfg.Port, router)
+	err = http.ListenAndServe(":"+cfg.Port, router)
+	if err != nil {
+		panic(err)
+	}
+
 }
