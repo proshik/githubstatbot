@@ -52,7 +52,7 @@ func (s *Store) Add(chatId int64, accessToken string) error {
 func (s *Store) Get(chatId int64) (string, error) {
 	db, err := open(s)
 	if err != nil {
-		log.Printf("Error on get element for chatId=%s, %v\n", chatId, err)
+		log.Printf("Error on get element for chatId=%d, %v\n", chatId, err)
 		return "", err
 	}
 	defer db.Close()
