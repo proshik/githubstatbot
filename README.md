@@ -17,12 +17,6 @@
 ```
 # Required environment variables
 
-# port, like: 8080
-$ export PORT=
-
-# database URL, like: postgres://postgres:password@localhost:5432/githubstatbot?sslmode=disable
-$ export DATABASE_URL=
-
 # telegram token, like: 47174:342lt;j34;lkgj;l3kgj
 $ export GITHUBSTATBOT_TELEGRAMTOKEN=
 
@@ -33,6 +27,12 @@ $ export GITHUBSTATBOT_GITHUBCLIENTID=
 $ export GITHUBSTATBOT_GITHUBCLIENTSECRET=
 
 # Not required environment variables
+
+# port, like: 8080
+$ export PORT=
+
+# database URL, like: postgres://postgres:password@localhost:5432/githubstatbot?sslmode=disable
+$ export DATABASE_URL=
 
 # static files directory, default: ./static
 $ export GITHUBSTATBOT_STATICFILESDIR=
