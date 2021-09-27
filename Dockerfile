@@ -1,5 +1,13 @@
 # Lightweight alpine OS, weight only 5mb, everything else is Go environment
 FROM golang AS builder
+ARG HOST=${HOST}
+ARG PORT=${PORT}
+ARG DATABASE_URL=${DATABASE_URL}
+ARG GITHUBSTATBOT_GITHUBCLIENTID=${GITHUBSTATBOT_GITHUBCLIENTID}
+ARG GITHUBSTATBOT_GITHUBCLIENTSECRET=${GITHUBSTATBOT_GITHUBCLIENTSECRET}
+ARG GITHUBSTATBOT_MODE=${GITHUBSTATBOT_MODE}
+ARG GITHUBSTATBOT_TELEGRAMTOKEN=${GITHUBSTATBOT_TELEGRAMTOKEN}
+ARG TZ=${TZ}
 # Workdir is path in your docker image from where all your commands will be executed
 WORKDIR /go/src/github.com/proshik/githubstatbot
 # Add all from your project inside workdir of docker image
