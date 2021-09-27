@@ -17,6 +17,6 @@ COPY --from=builder /go/src/github.com/proshik/githubstatbot/static ./static
 # Copy only build result from previous step to new lightweight image
 COPY --from=builder /go/src/github.com/proshik/githubstatbot/githubstatbot .
 # Expose port for access to your app outside of container
-EXPOSE 8080
+EXPOSE 80
 # Starting bundled binary file
 ENTRYPOINT [ "./githubstatbot" ]
